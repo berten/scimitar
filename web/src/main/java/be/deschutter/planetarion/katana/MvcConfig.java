@@ -23,7 +23,7 @@ import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 
-@SpringBootApplication(scanBasePackages = {"me.ramswaroop.jbot","be.deschutter"})
+@SpringBootApplication(scanBasePackages = {"be.deschutter"})
 public class MvcConfig extends WebMvcConfigurerAdapter {
 
     private static final Map<String, Definition> tiles = new HashMap<>();

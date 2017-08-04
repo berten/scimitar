@@ -7,8 +7,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
-@Configuration
-@EnableWebSecurity
+//@Configuration
+//@EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -20,7 +20,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().antMatchers("/index")
+        http.authorizeRequests().antMatchers("/scimitar").anonymous().antMatchers("/index")
             .access("hasRole('ROLE_USER')").antMatchers("/admin")
             .access("hasRole('ROLE_ADMIN')").and().formLogin()
             .loginPage("/login").defaultSuccessUrl("/index").and().rememberMe();
