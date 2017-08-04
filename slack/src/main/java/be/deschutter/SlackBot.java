@@ -8,15 +8,13 @@ import me.ramswaroop.jbot.core.slack.models.Event;
 import me.ramswaroop.jbot.core.slack.models.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.client.WebSocketConnectionManager;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.regex.Matcher;
 
@@ -32,7 +30,8 @@ public class SlackBot extends Bot {
 
     private static final Logger logger = LoggerFactory.getLogger(SlackBot.class);
 
-
+    @Autowired
+    private EventFactory eventFactory;
     /**
      * Slack token from application.properties file. You can get your slack token
      * next <a href="https://my.slack.com/services/new/bot">creating a new bot</a>.
@@ -59,18 +58,12 @@ public class SlackBot extends Bot {
      * @param session
      * @param event
      */
-    @Controller(events = {EventType.DIRECT_MENTION, EventType.DIRECT_MESSAGE})
-    public void onReceiveDM(WebSocketSession session, Event event) {
-        be.deschutter.scimitar.events.Event e = new be.deschutter.scimitar.events.Event();
-        e.setChannel(event.getChannelId());
-        e.setCommand("command");
-        e.setCurrentUsername(event.getUserId());
-        e.setLoggedInUsername(event.getUserId());
-        e.setReturnType(event.getType().equals(EventType.DIRECT_MESSAGE.name()) ? ReturnType.PRIVATE_MSG : ReturnType.CHANNEL_MSG);
+    @Controller(events = {EventType.DIRECT_MENTION, EventType.DIRECT_MESSAGE}, pattern = "(^[\\.!\\-])([a-zA-Z]*)\\s*(.*)")
+    public void onReceiveDM(WebSocketSession session, Event event, Matcher matcher) {
 
         RestTemplate restTemplate = new RestTemplate();
-        be.deschutter.scimitar.events.Event reply = restTemplate.postForObject("http://localhost:8080/scimitar", e, be.deschutter.scimitar.events.Event.class);
-        reply(session,reply);
+        be.deschutter.scimitar.events.Event reply = restTemplate.postForObject("http://localhost:8080/scimitar", eventFactory.makeEvent(event), be.deschutter.scimitar.events.Event.class);
+        reply(session, reply);
 
 
     }
@@ -101,12 +94,11 @@ public class SlackBot extends Bot {
      * @param session
      * @param event
      */
-    @Controller(events = EventType.MESSAGE, pattern = "^([a-z ]{2})(\\d+)([a-z ]{2})$")
+    @Controller(events = EventType.MESSAGE, pattern = "(^[\\.!\\-])([a-zA-Z]*)\\s*(.*)")
     public void onReceiveMessage(WebSocketSession session, Event event, Matcher matcher) {
-        reply(session, event, new Message("First group: " + matcher.group(0) + "\n" +
-                "Second group: " + matcher.group(1) + "\n" +
-                "Third group: " + matcher.group(2) + "\n" +
-                "Fourth group: " + matcher.group(3)));
+        RestTemplate restTemplate = new RestTemplate();
+        be.deschutter.scimitar.events.Event reply = restTemplate.postForObject("http://localhost:8080/scimitar", eventFactory.makeEvent(event), be.deschutter.scimitar.events.Event.class);
+        reply(session, reply);
     }
 
     /**
@@ -196,7 +188,6 @@ public class SlackBot extends Bot {
         }
         stopConversation(event);    // stop conversation
     }
-
 
 
 }
