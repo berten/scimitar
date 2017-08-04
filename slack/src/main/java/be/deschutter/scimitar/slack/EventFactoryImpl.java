@@ -3,6 +3,7 @@ package be.deschutter.scimitar.slack;
 import be.deschutter.scimitar.events.Event;
 import be.deschutter.scimitar.events.ReturnType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,7 +24,14 @@ public class EventFactoryImpl implements EventFactory {
         if (matcher.matches()) {
             event.setReturnType(ReturnType.findByPrefix(matcher.group(1)));
             event.setCommand(matcher.group(2));
-            event.setParameters(matcher.group(3));
+            String parameters = matcher.group(3);
+            if(!StringUtils.isEmpty(parameters)) {
+                event.setParameters(parameters.split("\\s+"));
+            }
+
+
+
+
         }
         return event;
     }

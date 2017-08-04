@@ -4,7 +4,7 @@ public class Event {
     private String currentUsername;
     private String loggedInUsername;
     private String command;
-    private String parameters;
+    private String[] parameters;
     private String channel;
     private ReturnType returnType;
     private String reply;
@@ -21,7 +21,7 @@ public class Event {
         return command;
     }
 
-    public String getParameters() {
+    public String[] getParameters() {
         return parameters;
     }
 
@@ -45,7 +45,7 @@ public class Event {
         this.command = command;
     }
 
-    public void setParameters(String parameters) {
+    public void setParameters(String[] parameters) {
         this.parameters = parameters;
     }
 
