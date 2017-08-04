@@ -1,4 +1,4 @@
-package be.deschutter;
+package be.deschutter.scimitar;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,4 +1,4 @@
-package be.deschutter;
+package be.deschutter.scimitar;
 
 import me.ramswaroop.jbot.core.slack.Bot;
 import me.ramswaroop.jbot.core.slack.Controller;
@@ -99,6 +99,5 @@ public class SlackBot extends Bot {
         be.deschutter.scimitar.events.Event reply = restTemplate.postForObject("http://localhost:8080/scimitar", eventFactory.makeEvent(event), be.deschutter.scimitar.events.Event.class);
         reply(session, reply);
     }
-
 
 }

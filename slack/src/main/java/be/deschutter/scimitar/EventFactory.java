@@ -1,4 +1,4 @@
-package be.deschutter;
+package be.deschutter.scimitar;
 
 import be.deschutter.scimitar.events.Event;
 

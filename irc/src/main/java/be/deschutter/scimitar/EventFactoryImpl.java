@@ -1,4 +1,4 @@
-package be.deschutter.irc.scimitar;
+package be.deschutter.scimitar;
 
 import be.deschutter.scimitar.events.Event;
 import be.deschutter.scimitar.events.ReturnType;
