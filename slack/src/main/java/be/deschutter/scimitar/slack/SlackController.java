@@ -1,4 +1,4 @@
-package be.deschutter.scimitar;
+package be.deschutter.scimitar.slack;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class SlackController {
 
     @Autowired
-    private SlackBot slackBot;
+    private Scimitar scimitar;
 
     @RequestMapping("/admin/slack/status")
     public @ResponseBody
@@ -21,7 +21,7 @@ public class SlackController {
     @RequestMapping("/admin/slack/start")
     public @ResponseBody
     Boolean start() {
-        slackBot.startWebSocketConnection();
+        scimitar.startWebSocketConnection();
         return true;
     }
 }

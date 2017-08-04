@@ -1,4 +1,4 @@
-package be.deschutter.scimitar;
+package be.deschutter.scimitar.slack;
 
 import be.deschutter.scimitar.events.Event;
 

@@ -1,6 +1,5 @@
-package be.deschutter.scimitar;
+package be.deschutter.scimitar.slack;
 
-import be.deschutter.scimitar.EventFactory;
 import be.deschutter.scimitar.events.Event;
 import be.deschutter.scimitar.events.ReturnType;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-package be.deschutter.scimitar;
+package be.deschutter.scimitar.slack;
 
 import me.ramswaroop.jbot.core.slack.Bot;
 import me.ramswaroop.jbot.core.slack.Controller;
@@ -17,17 +17,11 @@ import org.springframework.web.socket.WebSocketSession;
 import java.io.IOException;
 import java.util.regex.Matcher;
 
-/**
- * A Slack Bot sample. You can create multiple bots by just
- * extending {@link Bot} class like this one.
- *
- * @author ramswaroop
- * @version 1.0.0, 05/06/2016
- */
-@Component
-public class SlackBot extends Bot {
 
-    private static final Logger logger = LoggerFactory.getLogger(SlackBot.class);
+@Component
+public class Scimitar extends Bot {
+
+    private static final Logger logger = LoggerFactory.getLogger(Scimitar.class);
 
     @Autowired
     private EventFactory eventFactory;

@@ -1,4 +1,4 @@
-package be.deschutter.scimitar;
+package be.deschutter.scimitar.irc;
 
 import org.pircbotx.PircBotX;
 import org.pircbotx.exception.IrcException;

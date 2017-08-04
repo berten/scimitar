@@ -1,4 +1,4 @@
-package be.deschutter.scimitar.configuration;
+package be.deschutter.scimitar.irc.configuration;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

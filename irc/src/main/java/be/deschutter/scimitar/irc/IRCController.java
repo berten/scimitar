@@ -1,4 +1,4 @@
-package be.deschutter.scimitar;
+package be.deschutter.scimitar.irc;
 
 import org.pircbotx.exception.IrcException;
 import org.springframework.beans.factory.annotation.Autowired;
