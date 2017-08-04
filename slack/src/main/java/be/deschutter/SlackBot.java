@@ -1,5 +1,6 @@
 package be.deschutter;
 
+import be.deschutter.scimitar.events.ReturnType;
 import me.ramswaroop.jbot.core.slack.Bot;
 import me.ramswaroop.jbot.core.slack.Controller;
 import me.ramswaroop.jbot.core.slack.EventType;
@@ -9,10 +10,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.WebSocketConnectionManager;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.util.regex.Matcher;
 
 /**
@@ -56,7 +61,36 @@ public class SlackBot extends Bot {
      */
     @Controller(events = {EventType.DIRECT_MENTION, EventType.DIRECT_MESSAGE})
     public void onReceiveDM(WebSocketSession session, Event event) {
-        reply(session, event, new Message("Hi, I am " + slackService.getCurrentUser().getName()));
+        be.deschutter.scimitar.events.Event e = new be.deschutter.scimitar.events.Event();
+        e.setChannel(event.getChannelId());
+        e.setCommand("command");
+        e.setCurrentUsername(event.getUserId());
+        e.setLoggedInUsername(event.getUserId());
+        e.setReturnType(event.getType().equals(EventType.DIRECT_MESSAGE.name()) ? ReturnType.PRIVATE_MSG : ReturnType.CHANNEL_MSG);
+
+        RestTemplate restTemplate = new RestTemplate();
+        be.deschutter.scimitar.events.Event reply = restTemplate.postForObject("http://localhost:8080/scimitar", e, be.deschutter.scimitar.events.Event.class);
+        reply(session,reply);
+
+
+    }
+
+    private void reply(WebSocketSession session, be.deschutter.scimitar.events.Event reply) {
+        try {
+
+            Message message = new Message(reply.getReply());
+            message.setChannel(reply.getChannel());
+            message.setUser(reply.getCurrentUsername());
+            message.setUsername(reply.getCurrentUsername());
+            message.setType(EventType.MESSAGE.name().toLowerCase());
+
+            session.sendMessage(new TextMessage(message.toJSONString()));
+            if (logger.isDebugEnabled()) {  // For debugging purpose only
+                logger.debug("Reply (Message): {}", message.toJSONString());
+            }
+        } catch (IOException e) {
+            logger.error("Error sending event: {}. Exception: {}", reply.getReply(), e.getMessage());
+        }
     }
 
     /**
