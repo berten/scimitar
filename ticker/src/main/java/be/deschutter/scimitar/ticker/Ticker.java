@@ -1,63 +1,31 @@
 package be.deschutter.scimitar.ticker;
 
-import org.apache.commons.io.FileUtils;
+import org.springframework.batch.core.*;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
+import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
+import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-
 @Component
 public class Ticker {
-
-    @Value("${botfiles.planet.url}")
-    private String planetFile;
-
-    @Value("${botfiles.galaxy.url}")
-    private String galaxyFile;
-
-    @Value("${botfiles.alliance.url}")
-    private String allianceFile;
-
-    @Value("${botfiles.userfeed.url}")
-    private String userFeed;
-
-
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private JobLauncher jobLauncher;
+    @Autowired
+    private Job planetListingJob;
 
     @Scheduled(cron = "0 2 * * * *")
     public void tick() {
-        System.out.println(planetFile);
-    }
-
-    @PostConstruct
-    public void getUpToSpeed() {
-
-
+        JobParameters param = new JobParametersBuilder().addString("JobID",
+                String.valueOf(System.currentTimeMillis())).toJobParameters();
         try {
-
-            File planetListing = new File("planet_listing.txt");
-            FileUtils.copyURLToFile(new URL(planetFile), planetListing);
-
-            File galaxyListing = new File("galaxy_listing.txt");
-            FileUtils.copyURLToFile(new URL(galaxyFile), galaxyListing);
-
-            File allianceListing = new File("alliance_listing.txt");
-            FileUtils.copyURLToFile(new URL(allianceFile), allianceListing);
-
-            File userFeedFile = new File("user_feed.txt");
-            FileUtils.copyURLToFile(new URL(userFeed), userFeedFile);
-
-
-
-        } catch (IOException e) {
+            jobLauncher.run(planetListingJob, param);
+        } catch (JobExecutionAlreadyRunningException | JobRestartException | JobParametersInvalidException | JobInstanceAlreadyCompleteException e) {
             e.printStackTrace();
         }
     }
+
+
 }
