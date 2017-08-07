@@ -1,10 +1,11 @@
 package be.deschutter.scimitar;
 
 import javax.persistence.Entity;
+import javax.persistence.Id;
 
 @Entity
 public class PlanetStaging {
-
+@Id
     private String id;
     private int x;
     private int y;

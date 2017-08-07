@@ -1,5 +1,6 @@
 package be.deschutter.scimitar.ticker;
 
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -8,12 +9,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-
-import org.apache.commons.io.FileUtils;
 
 @Component
 public class Ticker {
@@ -44,13 +41,19 @@ public class Ticker {
 
 
         try {
-            URL url = new URL(planetFile);
-
 
             File planetListing = new File("planet_listing.txt");
-            FileUtils.copyURLToFile(url, planetListing);
+            FileUtils.copyURLToFile(new URL(planetFile), planetListing);
 
-            jdbcTemplate.execute("COPY planetstaging(id,x,y,z,planetname,rulername,size,score,value,xp,special) from 'tail -n +8 "+ planetListing.getAbsolutePath()+"' DELIMITER '\t' CSV");
+            File galaxyListing = new File("galaxy_listing.txt");
+            FileUtils.copyURLToFile(new URL(galaxyFile), galaxyListing);
+
+            File allianceListing = new File("alliance_listing.txt");
+            FileUtils.copyURLToFile(new URL(allianceFile), allianceListing);
+
+            File userFeedFile = new File("user_feed.txt");
+            FileUtils.copyURLToFile(new URL(userFeed), userFeedFile);
+
 
 
         } catch (IOException e) {
