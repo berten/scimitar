@@ -44,20 +44,23 @@ public class Ticker {
             FileUtils.copyURLToFile(new URL(planetFile), planetListing);
 
 
-
             String tickLine = Files
-                .readAllLines(Paths.get(planetListing.toURI()),Charset.forName("ISO-8859-1")).get(3);
+                    .readAllLines(Paths.get(planetListing.toURI()), Charset.forName("ISO-8859-1")).get(3);
 
             String tick = tickLine.replace("Tick: ", "");
             final long currentTick = Long.parseLong(tick);
-            tickerInfoEao.saveAndFlush(new TickerInfo(currentTick));
 
-            JobParameters param = new JobParametersBuilder()
-                //.addString("JobID", String.valueOf(System.currentTimeMillis()))
-                .addLong("tick", currentTick).toJobParameters();
+            TickerInfo lastTick = tickerInfoEao.findFirstByOrOrderByTickDesc();
+            if (lastTick.getTick() + 1 == currentTick) {
 
-            jobLauncher.run(planetListingJob, param);
+                tickerInfoEao.saveAndFlush(new TickerInfo(currentTick));
+                JobParameters param = new JobParametersBuilder()
+                        //.addString("JobID", String.valueOf(System.currentTimeMillis()))
+                        .addLong("tick", currentTick).toJobParameters();
+                jobLauncher.run(planetListingJob, param);
+            } else {
 
+            }
         } catch (JobExecutionAlreadyRunningException | JobRestartException | JobParametersInvalidException | JobInstanceAlreadyCompleteException | IOException e) {
             e.printStackTrace();
         }
