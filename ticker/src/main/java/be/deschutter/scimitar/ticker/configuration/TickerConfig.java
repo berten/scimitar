@@ -13,10 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EntityScan(basePackages = {"be.deschutter"})
 @EnableJpaRepositories(basePackages = {"be.deschutter"})
 public class TickerConfig {
-
     public static void main(String[] args) throws Exception {
         SpringApplication.run(TickerConfig.class);
     }
-
-
 }

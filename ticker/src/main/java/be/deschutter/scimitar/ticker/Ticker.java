@@ -31,12 +31,38 @@ public class Ticker {
     private Job planetListingJob;
 
     @Autowired
+    private Job galaxyListingJob;
+
+    @Autowired
+    private Job allianceListingJob;
+
+    @Autowired
     private TickerInfoEao tickerInfoEao;
+
 
     @Value("${botfiles.planet.url}")
     private String planetFile;
 
-    @Scheduled(cron = "0 33 * * * *")
+    @Value("${botfiles.galaxy.url}")
+    private String galaxyFile;
+
+    @Value("${botfiles.alliance.url}")
+    private String allianceFile;
+
+    @Value("${botfiles.userfeed.url}")
+    private String userFeed;
+
+    @Value("${botfiles.missedticks.planet.url}")
+    private String planetFileMissedTicks;
+
+    @Value("${botfiles.missedticks.galaxy.url}")
+    private String galaxyFileMissedTicks;
+
+    @Value("${botfiles.missedticks.alliance.url}")
+    private String allianceFileMissedTicks;
+
+
+    @Scheduled(cron = "0 08 * * * *")
     public void tick() {
 
         try {
@@ -50,20 +76,51 @@ public class Ticker {
             String tick = tickLine.replace("Tick: ", "");
             final long currentTick = Long.parseLong(tick);
 
-            TickerInfo lastTick = tickerInfoEao.findFirstByOrOrderByTickDesc();
+            TickerInfo lastTick = tickerInfoEao.findFirstByOrderByTickDesc();
+            if (lastTick == null)
+                lastTick = tickerInfoEao.save(new TickerInfo(0));
             if (lastTick.getTick() + 1 == currentTick) {
 
                 tickerInfoEao.saveAndFlush(new TickerInfo(currentTick));
                 JobParameters param = new JobParametersBuilder()
-                        //.addString("JobID", String.valueOf(System.currentTimeMillis()))
+                        .addString("planetFileName", planetFile)
                         .addLong("tick", currentTick).toJobParameters();
                 jobLauncher.run(planetListingJob, param);
+
+                param = new JobParametersBuilder()
+                        .addString("galaxyFileName", galaxyFile)
+                        .addLong("tick", currentTick).toJobParameters();
+                jobLauncher.run(galaxyListingJob, param);
+
+                param = new JobParametersBuilder()
+                        .addString("allianceFileName", allianceFile)
+                        .addLong("tick", currentTick).toJobParameters();
+                jobLauncher.run(allianceListingJob, param);
+
+
             } else {
+
+                for (long i = lastTick.getTick() + 1; i < currentTick; i++) {
+                    tickerInfoEao.saveAndFlush(new TickerInfo(i));
+                    JobParameters param = new JobParametersBuilder()
+                            .addString("planetFileName", planetFileMissedTicks.replace("%tick", "" + i))
+                            .addLong("tick", i).toJobParameters();
+                    jobLauncher.run(planetListingJob, param);
+
+                    param = new JobParametersBuilder()
+                            .addString("galaxyFileName", galaxyFileMissedTicks.replace("%tick", "" + i))
+                            .addLong("tick", i).toJobParameters();
+                    jobLauncher.run(galaxyListingJob, param);
+
+                    param = new JobParametersBuilder()
+                            .addString("allianceFileName", allianceFileMissedTicks.replace("%tick", "" + i))
+                            .addLong("tick", i).toJobParameters();
+                    jobLauncher.run(allianceListingJob, param);
+                }
 
             }
         } catch (JobExecutionAlreadyRunningException | JobRestartException | JobParametersInvalidException | JobInstanceAlreadyCompleteException | IOException e) {
             e.printStackTrace();
         }
     }
-
 }

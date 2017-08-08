@@ -1,9 +1,12 @@
-package be.deschutter.scimitar.ticker.planet.config;
+package be.deschutter.scimitar.ticker.alliance.config;
 
-import be.deschutter.scimitar.PlanetEao;
+import be.deschutter.scimitar.AllianceEao;
 import be.deschutter.scimitar.TickerInfo;
 import be.deschutter.scimitar.TickerInfoEao;
-import be.deschutter.scimitar.ticker.planet.*;
+import be.deschutter.scimitar.ticker.alliance.AllianceFieldSetMapper;
+import be.deschutter.scimitar.ticker.alliance.AllianceItemProcessor;
+import be.deschutter.scimitar.ticker.alliance.AllianceStaging;
+import be.deschutter.scimitar.ticker.alliance.AllianceWriter;
 import org.apache.commons.io.FileUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
@@ -29,7 +32,7 @@ import java.io.IOException;
 import java.net.URL;
 
 @Configuration
-public class PlanetConfig {
+public class AllianceConfig {
 
 
     @Autowired
@@ -41,19 +44,19 @@ public class PlanetConfig {
     @Autowired
     private TickerInfoEao tickerInfoEao;
 
+    @Autowired()
+    private AllianceFieldSetMapper allianceFieldSetMapper;
     @Autowired
-    private PlanetFieldSetMapper planetFieldSetMapper;
+    private AllianceItemProcessor allianceItemProcessor;
     @Autowired
-    private PlanetItemProcessor planetItemProcessor;
+    private AllianceWriter allianceWriter;
     @Autowired
-    private PlanetWriter planetWriter;
-    @Autowired
-    private PlanetEao planetEao;
+    private AllianceEao allianceEao;
 
 
     @Bean
-    public Job planetListingJob() {
-        return jobs.get("PlanetJob").incrementer(new RunIdIncrementer())
+    public Job allianceListingJob() {
+        return jobs.get("AllianceJob").incrementer(new RunIdIncrementer())
                 .listener(new JobExecutionListener() {
                     @Override
                     public void beforeJob(final JobExecution jobExecution) {
@@ -64,39 +67,35 @@ public class PlanetConfig {
                     public void afterJob(final JobExecution jobExecution) {
                         final TickerInfo tick = tickerInfoEao.findByTick(
                                 jobExecution.getJobParameters().getLong("tick"));
-                        tick.setProcessingTimePlanets(
+                        tick.setProcessingTimeAlliances(
                                 jobExecution.getEndTime().getTime() - jobExecution
                                         .getStartTime().getTime());
-
-
-                        tick.setPlanets(planetEao.countByTick(tick.getTick()));
-                        tickerInfoEao.save(tick);
-
+                        tick.setAlliances(allianceEao.countByTick(tick.getTick()));
                         tickerInfoEao.saveAndFlush(tick);
                     }
-                }).flow(planetStep()).end().build();
+                }).flow(allianceStep()).end().build();
     }
 
     @Bean
-    public Step planetStep() {
+    public Step allianceStep() {
         return stepBuilderFactory
-                .get("step").<PlanetStaging, PlanetStaging>chunk(
+                .get("step").<AllianceStaging, AllianceStaging>chunk(
                         1) //important to be one in this case to commit after every line read
-                .reader(planetReader(null)).processor(planetItemProcessor).writer(planetWriter)
+                .reader(allianceReader(null)).processor(allianceItemProcessor).writer(allianceWriter)
                 .faultTolerant().build();
     }
 
     @Bean
     @StepScope
-    public FlatFileItemReader<PlanetStaging> planetReader(@Value("#{jobParameters['planetFileName']}") String planetFileName) {
+    public FlatFileItemReader<AllianceStaging> allianceReader(@Value("#{jobParameters['allianceFileName']}") String allianceFileName) {
 
         try {
-            File planetListing = new File("planet_listing.txt");
-            FileUtils.copyURLToFile(new URL(planetFileName), planetListing);
-            FlatFileItemReader<PlanetStaging> reader = new FlatFileItemReader<>();
+            File allianceListing = new File("alliance_listing.txt");
+            FileUtils.copyURLToFile(new URL(allianceFileName), allianceListing);
+            FlatFileItemReader<AllianceStaging> reader = new FlatFileItemReader<>();
             reader.setLinesToSkip(8);
-            reader.setResource(new PathResource(planetListing.toURI()));
-            reader.setLineMapper(planetLineMapper());
+            reader.setResource(new PathResource(allianceListing.toURI()));
+            reader.setLineMapper(allianceLineMapper());
             return reader;
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -104,21 +103,22 @@ public class PlanetConfig {
     }
 
     @Bean
-    public LineMapper<PlanetStaging> planetLineMapper() {
-        DefaultLineMapper<PlanetStaging> lineMapper = new DefaultLineMapper<>();
+    public LineMapper<AllianceStaging> allianceLineMapper() {
+
+        DefaultLineMapper<AllianceStaging> lineMapper = new DefaultLineMapper<>();
 
         DelimitedLineTokenizer lineTokenizer = new DelimitedLineTokenizer();
         lineTokenizer.setDelimiter("\t");
         lineTokenizer.setStrict(false);
         lineTokenizer.setNames(
-                new String[]{"id", "x", "y", "z", "planet_name", "ruler_name",
-                        "race", "size", "score", "value", "xp", "special"});
+                new String[]{"rank", "alliance_name", "size",
+                        "members", "counted_score", "points", "total_score", "total_value"});
 
-        BeanWrapperFieldSetMapper<PlanetStaging> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
-        fieldSetMapper.setTargetType(PlanetStaging.class);
+        BeanWrapperFieldSetMapper<AllianceStaging> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
+        fieldSetMapper.setTargetType(AllianceStaging.class);
 
         lineMapper.setLineTokenizer(lineTokenizer);
-        lineMapper.setFieldSetMapper(planetFieldSetMapper);
+        lineMapper.setFieldSetMapper(allianceFieldSetMapper);
 
         return lineMapper;
     }

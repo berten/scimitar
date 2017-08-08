@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 @Component
-public class HelpListenerImpl implements Listener {
+public class HelpListener implements Listener {
 
     private ApplicationContext context;
     private Collection<Listener> listeners;

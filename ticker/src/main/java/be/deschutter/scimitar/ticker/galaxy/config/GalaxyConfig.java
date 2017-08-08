@@ -1,9 +1,12 @@
-package be.deschutter.scimitar.ticker.planet.config;
+package be.deschutter.scimitar.ticker.galaxy.config;
 
-import be.deschutter.scimitar.PlanetEao;
+import be.deschutter.scimitar.GalaxyEao;
 import be.deschutter.scimitar.TickerInfo;
 import be.deschutter.scimitar.TickerInfoEao;
-import be.deschutter.scimitar.ticker.planet.*;
+import be.deschutter.scimitar.ticker.galaxy.GalaxyFieldSetMapper;
+import be.deschutter.scimitar.ticker.galaxy.GalaxyItemProcessor;
+import be.deschutter.scimitar.ticker.galaxy.GalaxyStaging;
+import be.deschutter.scimitar.ticker.galaxy.GalaxyWriter;
 import org.apache.commons.io.FileUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
@@ -29,7 +32,7 @@ import java.io.IOException;
 import java.net.URL;
 
 @Configuration
-public class PlanetConfig {
+public class GalaxyConfig {
 
 
     @Autowired
@@ -41,19 +44,19 @@ public class PlanetConfig {
     @Autowired
     private TickerInfoEao tickerInfoEao;
 
+    @Autowired()
+    private GalaxyFieldSetMapper galaxyFieldSetMapper;
     @Autowired
-    private PlanetFieldSetMapper planetFieldSetMapper;
+    private GalaxyItemProcessor galaxyItemProcessor;
     @Autowired
-    private PlanetItemProcessor planetItemProcessor;
+    private GalaxyWriter galaxyWriter;
     @Autowired
-    private PlanetWriter planetWriter;
-    @Autowired
-    private PlanetEao planetEao;
+    private GalaxyEao galaxyEao;
 
 
     @Bean
-    public Job planetListingJob() {
-        return jobs.get("PlanetJob").incrementer(new RunIdIncrementer())
+    public Job galaxyListingJob() {
+        return jobs.get("GalaxyJob").incrementer(new RunIdIncrementer())
                 .listener(new JobExecutionListener() {
                     @Override
                     public void beforeJob(final JobExecution jobExecution) {
@@ -64,39 +67,36 @@ public class PlanetConfig {
                     public void afterJob(final JobExecution jobExecution) {
                         final TickerInfo tick = tickerInfoEao.findByTick(
                                 jobExecution.getJobParameters().getLong("tick"));
-                        tick.setProcessingTimePlanets(
+                        tick.setProcessingTimeGalaxies(
                                 jobExecution.getEndTime().getTime() - jobExecution
                                         .getStartTime().getTime());
 
-
-                        tick.setPlanets(planetEao.countByTick(tick.getTick()));
-                        tickerInfoEao.save(tick);
-
+                        tick.setGalaxies(galaxyEao.countByTick(tick.getTick()));
                         tickerInfoEao.saveAndFlush(tick);
                     }
-                }).flow(planetStep()).end().build();
+                }).flow(galaxyStep()).end().build();
     }
 
     @Bean
-    public Step planetStep() {
+    public Step galaxyStep() {
         return stepBuilderFactory
-                .get("step").<PlanetStaging, PlanetStaging>chunk(
+                .get("step").<GalaxyStaging, GalaxyStaging>chunk(
                         1) //important to be one in this case to commit after every line read
-                .reader(planetReader(null)).processor(planetItemProcessor).writer(planetWriter)
+                .reader(galaxyReader(null)).processor(galaxyItemProcessor).writer(galaxyWriter)
                 .faultTolerant().build();
     }
 
     @Bean
     @StepScope
-    public FlatFileItemReader<PlanetStaging> planetReader(@Value("#{jobParameters['planetFileName']}") String planetFileName) {
+    public FlatFileItemReader<GalaxyStaging> galaxyReader(@Value("#{jobParameters['galaxyFileName']}") String galaxyFileName) {
 
         try {
-            File planetListing = new File("planet_listing.txt");
-            FileUtils.copyURLToFile(new URL(planetFileName), planetListing);
-            FlatFileItemReader<PlanetStaging> reader = new FlatFileItemReader<>();
+            File galaxyListing = new File("galaxy_listing.txt");
+            FileUtils.copyURLToFile(new URL(galaxyFileName), galaxyListing);
+            FlatFileItemReader<GalaxyStaging> reader = new FlatFileItemReader<>();
             reader.setLinesToSkip(8);
-            reader.setResource(new PathResource(planetListing.toURI()));
-            reader.setLineMapper(planetLineMapper());
+            reader.setResource(new PathResource(galaxyListing.toURI()));
+            reader.setLineMapper(galaxyLineMapper());
             return reader;
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -104,21 +104,22 @@ public class PlanetConfig {
     }
 
     @Bean
-    public LineMapper<PlanetStaging> planetLineMapper() {
-        DefaultLineMapper<PlanetStaging> lineMapper = new DefaultLineMapper<>();
+    public LineMapper<GalaxyStaging> galaxyLineMapper() {
+
+        DefaultLineMapper<GalaxyStaging> lineMapper = new DefaultLineMapper<>();
 
         DelimitedLineTokenizer lineTokenizer = new DelimitedLineTokenizer();
         lineTokenizer.setDelimiter("\t");
         lineTokenizer.setStrict(false);
         lineTokenizer.setNames(
-                new String[]{"id", "x", "y", "z", "planet_name", "ruler_name",
-                        "race", "size", "score", "value", "xp", "special"});
+                new String[]{"x", "y", "galaxy_name",
+                        "size", "score", "value", "xp"});
 
-        BeanWrapperFieldSetMapper<PlanetStaging> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
-        fieldSetMapper.setTargetType(PlanetStaging.class);
+        BeanWrapperFieldSetMapper<GalaxyStaging> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
+        fieldSetMapper.setTargetType(GalaxyStaging.class);
 
         lineMapper.setLineTokenizer(lineTokenizer);
-        lineMapper.setFieldSetMapper(planetFieldSetMapper);
+        lineMapper.setFieldSetMapper(galaxyFieldSetMapper);
 
         return lineMapper;
     }

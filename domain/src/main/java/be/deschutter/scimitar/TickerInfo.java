@@ -12,13 +12,14 @@ public class TickerInfo {
     private Long processingTimePlanets;
     private Long processingTimeGalaxies;
     private Long processingTimeAlliances;
-    private int planets;
-    private int galaxies;
-    private int alliances;
+    private Long planets;
+    private Long galaxies;
+    private Long alliances;
     private LocalDateTime tickTime;
 
     public TickerInfo(final long tick) {
         this.tick = tick;
+        tickTime = LocalDateTime.now();
     }
 
     private TickerInfo() {
@@ -41,29 +42,7 @@ public class TickerInfo {
         this.processingTimePlanets = processingTimePlanets;
     }
 
-    public int getPlanets() {
-        return planets;
-    }
 
-    public void setPlanets(final int planets) {
-        this.planets = planets;
-    }
-
-    public int getGalaxies() {
-        return galaxies;
-    }
-
-    public void setGalaxies(final int galaxies) {
-        this.galaxies = galaxies;
-    }
-
-    public int getAlliances() {
-        return alliances;
-    }
-
-    public void setAlliances(final int alliances) {
-        this.alliances = alliances;
-    }
 
     public Long getProcessingTimeAlliances() {
         return processingTimeAlliances;
@@ -87,5 +66,29 @@ public class TickerInfo {
 
     public void setTickTime(final LocalDateTime tickTime) {
         this.tickTime = tickTime;
+    }
+
+    public Long getPlanets() {
+        return planets;
+    }
+
+    public void setPlanets(Long planets) {
+        this.planets = planets;
+    }
+
+    public Long getGalaxies() {
+        return galaxies;
+    }
+
+    public void setGalaxies(Long galaxies) {
+        this.galaxies = galaxies;
+    }
+
+    public Long getAlliances() {
+        return alliances;
+    }
+
+    public void setAlliances(Long alliances) {
+        this.alliances = alliances;
     }
 }

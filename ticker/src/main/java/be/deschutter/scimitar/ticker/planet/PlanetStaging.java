@@ -1,10 +1,14 @@
-package be.deschutter.scimitar;
+package be.deschutter.scimitar.ticker.planet;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
 
 @Entity
+@IdClass(PlanetStagingPk.class)
 public class PlanetStaging {
+    @Id
+    private int tick;
     @Id
     private String id;
     private int x;
@@ -18,6 +22,14 @@ public class PlanetStaging {
     private long value;
     private long xp;
     private String special;
+
+    public int getTick() {
+        return tick;
+    }
+
+    public void setTick(int tick) {
+        this.tick = tick;
+    }
 
     public String getId() {
         return id;
@@ -114,4 +126,5 @@ public class PlanetStaging {
     public void setSpecial(String special) {
         this.special = special;
     }
+
 }
