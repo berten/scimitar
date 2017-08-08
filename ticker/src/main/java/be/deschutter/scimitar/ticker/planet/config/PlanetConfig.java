@@ -2,13 +2,15 @@ package be.deschutter.scimitar.ticker.planet.config;
 
 import be.deschutter.scimitar.PlanetStaging;
 import be.deschutter.scimitar.PlanetStagingEao;
-import be.deschutter.scimitar.ticker.LogProcessListener;
-import be.deschutter.scimitar.ticker.ProtocolListener;
+import be.deschutter.scimitar.TickerInfo;
+import be.deschutter.scimitar.TickerInfoEao;
 import be.deschutter.scimitar.ticker.planet.PlanetStagingFieldSetMapper;
 import be.deschutter.scimitar.ticker.planet.PlanetStagingItemProcessor;
 import be.deschutter.scimitar.ticker.planet.PlanetStagingWriter;
 import org.apache.commons.io.FileUtils;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
@@ -54,21 +56,37 @@ public class PlanetConfig {
     @Autowired
     private PlanetStagingEao planetStagingEao;
 
+    @Autowired
+    private TickerInfoEao tickerInfoEao;
+
     @Bean
     public Job planetListingJob() {
         return jobs.get("planetStagingJob").incrementer(new RunIdIncrementer())
-                .flow(planetStep()).end().build();
-    }
+            .listener(new JobExecutionListener() {
+                @Override
+                public void beforeJob(final JobExecution jobExecution) {
 
+                }
+
+                @Override
+                public void afterJob(final JobExecution jobExecution) {
+                    final TickerInfo tick = tickerInfoEao.findByTick(
+                        jobExecution.getJobParameters().getLong("tick"));
+                    tick.setProcessingTimePlanets(
+                        jobExecution.getEndTime().getTime() - jobExecution
+                            .getStartTime().getTime());
+                    tickerInfoEao.saveAndFlush(tick);
+                }
+            }).flow(planetStep()).end().build();
+    }
 
     @Bean
     public Step planetStep() {
         return stepBuilderFactory
-                .get("step").<PlanetStaging, PlanetStaging>chunk(
-                        1) //important to be one in this case to commit after every line read
-                .reader(planetReader()).processor(processor()).writer(writer())
-                .faultTolerant()
-                .build();
+            .get("step").<PlanetStaging, PlanetStaging>chunk(
+                1) //important to be one in this case to commit after every line read
+            .reader(planetReader()).processor(processor()).writer(writer())
+            .faultTolerant().build();
     }
 
     @Bean
@@ -97,10 +115,8 @@ public class PlanetConfig {
         lineTokenizer.setDelimiter("\t");
         lineTokenizer.setStrict(false);
         lineTokenizer.setNames(
-                new String[]{"id", "x",
-                        "y", "z", "planet_name", "ruler_name",
-                        "race", "size", "score", "value",
-                        "xp", "special"});
+            new String[] { "id", "x", "y", "z", "planet_name", "ruler_name",
+                "race", "size", "score", "value", "xp", "special" });
 
         BeanWrapperFieldSetMapper<PlanetStaging> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
         fieldSetMapper.setTargetType(PlanetStaging.class);
@@ -128,6 +144,5 @@ public class PlanetConfig {
     public ItemWriter<PlanetStaging> writer() {
         return new PlanetStagingWriter();
     }
-
 
 }
