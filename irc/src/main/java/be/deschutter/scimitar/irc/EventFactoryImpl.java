@@ -33,7 +33,7 @@ public class EventFactoryImpl implements EventFactory {
                 event.setCommand(matcher.group(2));
                 String parameters = matcher.group(3);
                 if(!StringUtils.isEmpty(parameters)) {
-                    event.setParameters(parameters.split("\\s+"));
+                    event.setParameters(parameters.split(":|\\s+"));
                 }
             }
         }

@@ -28,10 +28,6 @@ public class EventFactoryImpl implements EventFactory {
             if(!StringUtils.isEmpty(parameters)) {
                 event.setParameters(parameters.split(":|\\s+"));
             }
-
-
-
-
         }
         return event;
     }

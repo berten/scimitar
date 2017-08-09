@@ -3,16 +3,11 @@ package be.deschutter.scimitar.slack;
 import be.deschutter.scimitar.events.ReturnType;
 import me.ramswaroop.jbot.core.slack.models.Event;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(MockitoJUnitRunner.class)
 public class EventFactoryImplTest {
-    @InjectMocks
-    private EventFactoryImpl eventFactory;
+    private EventFactory eventFactory = new EventFactoryImpl();
 
     @Test
     public void makeEvent() throws Exception {
@@ -28,7 +23,7 @@ public class EventFactoryImplTest {
         assertThat(result.getLoggedInUsername()).isEqualTo("userId");
         assertThat(result.getCommand()).isEqualTo("lookup");
         assertThat(result.getReturnType()).isEqualTo(ReturnType.CHANNEL_MSG);
-        assertThat(result.getParameters()).contains("x","y","z");
+        assertThat(result.getParameters()).contains("x", "y", "z");
     }
 
 }
