@@ -6,6 +6,7 @@ import be.deschutter.scimitar.TickerInfoEao;
 import be.deschutter.scimitar.ticker.galaxy.GalaxyFieldSetMapper;
 import be.deschutter.scimitar.ticker.galaxy.GalaxyItemProcessor;
 import be.deschutter.scimitar.ticker.galaxy.GalaxyStaging;
+import be.deschutter.scimitar.ticker.galaxy.GalaxyStagingEao;
 import be.deschutter.scimitar.ticker.galaxy.GalaxyWriter;
 import org.apache.commons.io.FileUtils;
 import org.springframework.batch.core.Job;
@@ -26,14 +27,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.PathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.persistence.EntityManager;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Date;
 
 @Configuration
 public class GalaxyConfig {
-
 
     @Autowired
     private JobBuilderFactory jobs;
@@ -52,43 +55,67 @@ public class GalaxyConfig {
     private GalaxyWriter galaxyWriter;
     @Autowired
     private GalaxyEao galaxyEao;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private GalaxyStagingEao galaxyStagingEao;
 
     @Bean
     public Job galaxyListingJob() {
         return jobs.get("GalaxyJob").incrementer(new RunIdIncrementer())
-                .listener(new JobExecutionListener() {
-                    @Override
-                    public void beforeJob(final JobExecution jobExecution) {
+            .listener(new JobExecutionListener() {
+                @Override
+                public void beforeJob(final JobExecution jobExecution) {
+                    galaxyStagingEao.deleteAll();
+                }
 
-                    }
+                @Override
+                public void afterJob(final JobExecution jobExecution) {
+                    final TickerInfo tick = tickerInfoEao.findByTick(
+                        jobExecution.getJobParameters().getLong("tick"));
 
-                    @Override
-                    public void afterJob(final JobExecution jobExecution) {
-                        final TickerInfo tick = tickerInfoEao.findByTick(
-                                jobExecution.getJobParameters().getLong("tick"));
-                        tick.setProcessingTimeGalaxies(
-                                jobExecution.getEndTime().getTime() - jobExecution
-                                        .getStartTime().getTime());
+                    jdbcTemplate.execute(
+                        "INSERT into galaxy (tick,galaxy_name,score,size,value,x,xp,y,score_rank,value_rank,size_rank,xp_rank) SELECT tick,galaxy_name,score,size,value,x,xp,y,score_rank,value_rank,size_rank,xp_rank from ("
+                            + "  SELECT" + "    *," + "    rank()"
+                            + "    OVER (ORDER BY score DESC ) as score_rank,"
+                            + "    rank()"
+                            + "    OVER (ORDER BY value DESC )as value_rank,"
+                            + "    rank()"
+                            + "    OVER (ORDER BY size DESC )as size_rank,"
+                            + "    rank()"
+                            + "    OVER (ORDER BY xp DESC )as xp_rank"
+                            + "  FROM galaxy_staging" + ") as galaxy_rank");
 
-                        tick.setGalaxies(galaxyEao.countByTick(tick.getTick()));
-                        tickerInfoEao.saveAndFlush(tick);
-                    }
-                }).flow(galaxyStep()).end().build();
+                    jdbcTemplate.execute(
+                        "update galaxy set planets=(select count(*) from planet where planet.x=galaxy.x and planet.y=galaxy.y and planet.tick=galaxy.tick) where tick="
+                            + tick.getTick());
+
+
+
+                    tick.setGalaxies(galaxyEao.countByTick(tick.getTick()));
+                    tick.setProcessingTimeGalaxies(
+                        new Date().getTime() - jobExecution
+                            .getStartTime().getTime());
+                    tickerInfoEao.saveAndFlush(tick);
+                }
+            }).flow(galaxyStep()).end().build();
     }
 
     @Bean
     public Step galaxyStep() {
         return stepBuilderFactory
-                .get("step").<GalaxyStaging, GalaxyStaging>chunk(
-                        1) //important to be one in this case to commit after every line read
-                .reader(galaxyReader(null)).processor(galaxyItemProcessor).writer(galaxyWriter)
-                .faultTolerant().build();
+            .get("step").<GalaxyStaging, GalaxyStaging>chunk(
+                1) //important to be one in this case to commit after every line read
+            .reader(galaxyReader(null)).processor(galaxyItemProcessor)
+            .writer(galaxyWriter).faultTolerant().build();
     }
 
     @Bean
     @StepScope
-    public FlatFileItemReader<GalaxyStaging> galaxyReader(@Value("#{jobParameters['galaxyFileName']}") String galaxyFileName) {
+    public FlatFileItemReader<GalaxyStaging> galaxyReader(
+        @Value("#{jobParameters['galaxyFileName']}")
+            String galaxyFileName) {
 
         try {
             File galaxyListing = new File("galaxy_listing.txt");
@@ -112,8 +139,8 @@ public class GalaxyConfig {
         lineTokenizer.setDelimiter("\t");
         lineTokenizer.setStrict(false);
         lineTokenizer.setNames(
-                new String[]{"x", "y", "galaxy_name",
-                        "size", "score", "value", "xp"});
+            new String[] { "x", "y", "galaxy_name", "size", "score", "value",
+                "xp" });
 
         BeanWrapperFieldSetMapper<GalaxyStaging> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
         fieldSetMapper.setTargetType(GalaxyStaging.class);

@@ -62,7 +62,7 @@ public class Ticker {
     private String allianceFileMissedTicks;
 
 
-    @Scheduled(cron = "0 08 * * * *")
+    @Scheduled(cron = "0 15 * * * *")
     public void tick() {
 
         try {
@@ -77,9 +77,8 @@ public class Ticker {
             final long currentTick = Long.parseLong(tick);
 
             TickerInfo lastTick = tickerInfoEao.findFirstByOrderByTickDesc();
-            if (lastTick == null)
-                lastTick = tickerInfoEao.save(new TickerInfo(0));
-            if (lastTick.getTick() + 1 == currentTick) {
+            final long previousTick = lastTick != null ? lastTick.getTick() : 0;
+            if (previousTick + 1 == currentTick) {
 
                 tickerInfoEao.saveAndFlush(new TickerInfo(currentTick));
                 JobParameters param = new JobParametersBuilder()
@@ -100,7 +99,7 @@ public class Ticker {
 
             } else {
 
-                for (long i = lastTick.getTick() + 1; i < currentTick; i++) {
+                for (long i = previousTick + 1; i < currentTick; i++) {
                     tickerInfoEao.saveAndFlush(new TickerInfo(i));
                     JobParameters param = new JobParametersBuilder()
                             .addString("planetFileName", planetFileMissedTicks.replace("%tick", "" + i))

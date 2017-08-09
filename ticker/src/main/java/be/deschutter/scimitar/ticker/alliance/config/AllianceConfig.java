@@ -6,6 +6,7 @@ import be.deschutter.scimitar.TickerInfoEao;
 import be.deschutter.scimitar.ticker.alliance.AllianceFieldSetMapper;
 import be.deschutter.scimitar.ticker.alliance.AllianceItemProcessor;
 import be.deschutter.scimitar.ticker.alliance.AllianceStaging;
+import be.deschutter.scimitar.ticker.alliance.AllianceStagingEao;
 import be.deschutter.scimitar.ticker.alliance.AllianceWriter;
 import org.apache.commons.io.FileUtils;
 import org.springframework.batch.core.Job;
@@ -26,14 +27,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.PathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Date;
 
 @Configuration
 public class AllianceConfig {
-
 
     @Autowired
     private JobBuilderFactory jobs;
@@ -52,42 +54,62 @@ public class AllianceConfig {
     private AllianceWriter allianceWriter;
     @Autowired
     private AllianceEao allianceEao;
-
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private AllianceStagingEao allianceStagingEao;
 
     @Bean
     public Job allianceListingJob() {
         return jobs.get("AllianceJob").incrementer(new RunIdIncrementer())
-                .listener(new JobExecutionListener() {
-                    @Override
-                    public void beforeJob(final JobExecution jobExecution) {
+            .listener(new JobExecutionListener() {
+                @Override
+                public void beforeJob(final JobExecution jobExecution) {
+                    allianceStagingEao.deleteAll();
+                }
 
-                    }
+                @Override
+                public void afterJob(final JobExecution jobExecution) {
+                    final TickerInfo tick = tickerInfoEao.findByTick(
+                        jobExecution.getJobParameters().getLong("tick"));
 
-                    @Override
-                    public void afterJob(final JobExecution jobExecution) {
-                        final TickerInfo tick = tickerInfoEao.findByTick(
-                                jobExecution.getJobParameters().getLong("tick"));
-                        tick.setProcessingTimeAlliances(
-                                jobExecution.getEndTime().getTime() - jobExecution
-                                        .getStartTime().getTime());
-                        tick.setAlliances(allianceEao.countByTick(tick.getTick()));
-                        tickerInfoEao.saveAndFlush(tick);
-                    }
-                }).flow(allianceStep()).end().build();
+                    jdbcTemplate.execute(
+                        "INSERT INTO alliance (alliance_name, tick,counted_score,members,points,counted_score_rank,size,total_score,total_value,score_rank,value_rank,size_rank,points_rank) SELECT alliance_name, tick,counted_score,members,points,counted_score_rank,size,total_score,total_value,score_rank,value_rank,size_rank,points_rank from ("
+                            + "  SELECT"
+                            + "    alliance_name, tick,counted_score,members,points,rank as counted_score_rank,size,total_score,total_value,"
+                            + "    rank()"
+                            + "    OVER (ORDER BY total_score DESC ) as score_rank,"
+                            + "    rank()"
+                            + "    OVER (ORDER BY total_value DESC ) as value_rank,"
+                            + "    rank()"
+                            + "    OVER (ORDER BY size DESC ) as size_rank,"
+                            + "    rank()"
+                            + "    OVER (ORDER BY points DESC ) as points_rank"
+                            + "  FROM alliance_staging" + ") as alliance_rank");
+
+                    tick.setAlliances(allianceEao.countByTick(tick.getTick()));
+                    tick.setProcessingTimeAlliances(
+                        new Date().getTime() - jobExecution.getStartTime()
+                            .getTime());
+                    tickerInfoEao.saveAndFlush(tick);
+                }
+            }).flow(allianceStep()).end().build();
     }
 
     @Bean
     public Step allianceStep() {
         return stepBuilderFactory
-                .get("step").<AllianceStaging, AllianceStaging>chunk(
-                        1) //important to be one in this case to commit after every line read
-                .reader(allianceReader(null)).processor(allianceItemProcessor).writer(allianceWriter)
-                .faultTolerant().build();
+            .get("step").<AllianceStaging, AllianceStaging>chunk(
+                1) //important to be one in this case to commit after every line read
+            .reader(allianceReader(null)).processor(allianceItemProcessor)
+            .writer(allianceWriter).faultTolerant().build();
     }
 
     @Bean
     @StepScope
-    public FlatFileItemReader<AllianceStaging> allianceReader(@Value("#{jobParameters['allianceFileName']}") String allianceFileName) {
+    public FlatFileItemReader<AllianceStaging> allianceReader(
+        @Value("#{jobParameters['allianceFileName']}")
+            String allianceFileName) {
 
         try {
             File allianceListing = new File("alliance_listing.txt");
@@ -111,8 +133,8 @@ public class AllianceConfig {
         lineTokenizer.setDelimiter("\t");
         lineTokenizer.setStrict(false);
         lineTokenizer.setNames(
-                new String[]{"rank", "alliance_name", "size",
-                        "members", "counted_score", "points", "total_score", "total_value"});
+            new String[] { "rank", "alliance_name", "size", "members",
+                "counted_score", "points", "total_score", "total_value" });
 
         BeanWrapperFieldSetMapper<AllianceStaging> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
         fieldSetMapper.setTargetType(AllianceStaging.class);
