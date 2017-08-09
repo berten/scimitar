@@ -27,6 +27,7 @@ public class Planet {
     private int scoreRank;
     private int sizeRank;
     private int valueRank;
+    private int xpRank;
 
     public int getSizeRank() {
         return sizeRank;
@@ -154,5 +155,13 @@ public class Planet {
 
     public void setScoreRank(int scoreRank) {
         this.scoreRank = scoreRank;
+    }
+
+    public int getXpRank() {
+        return xpRank;
+    }
+
+    public void setXpRank(final int xpRank) {
+        this.xpRank = xpRank;
     }
 }

@@ -75,13 +75,15 @@ public class PlanetConfig {
                         jobExecution.getJobParameters().getLong("tick"));
 
                     jdbcTemplate.execute(
-                        "INSERT into planet (id,tick,planet_name,race,ruler_name,score,size,special,value,x,xp,y,z,score_rank,value_rank,size_rank) SELECT id,tick,planet_name,race,ruler_name,score,size,special,value,x,xp,y,z,score_rank,value_rank,size_rank from ("
+                        "INSERT into planet (id,tick,planet_name,race,ruler_name,score,size,special,value,x,xp,y,z,score_rank,value_rank,size_rank,xp_rank) SELECT id,tick,planet_name,race,ruler_name,score,size,special,value,x,xp,y,z,score_rank,value_rank,size_rank,xp_rank from ("
                             + "  SELECT" + "    *," + "    rank()"
                             + "    OVER (ORDER BY score DESC ) as score_rank,"
                             + "    rank()"
                             + "    OVER (ORDER BY value DESC )as value_rank,"
                             + "    rank()"
-                            + "    OVER (ORDER BY size DESC )as size_rank"
+                            + "    OVER (ORDER BY size DESC )as size_rank,"
+                            + "    rank()"
+                            + "    OVER (ORDER BY xp DESC )as xp_rank"
                             + "  FROM planet_staging" + ") as planet_rank");
 
 
