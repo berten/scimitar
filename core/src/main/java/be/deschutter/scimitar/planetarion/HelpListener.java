@@ -15,10 +15,9 @@ public class HelpListener implements Listener {
     private Collection<Listener> listeners;
 
     @PostConstruct
-    public void letsTest() {
+    public void loadListeners() {
         listeners = context.getBeansOfType(Listener.class).values();
     }
-
 
     @Override
     public String getCommand() {
@@ -32,14 +31,24 @@ public class HelpListener implements Listener {
 
     @Override
     public String getResult(String... parameters) {
-        if (parameters == null)
-            return "List of commands: " + listeners.stream().map(Listener::getCommand).collect(Collectors.joining(", "));
-        else if (parameters.length == 1)
-            return "Pattern for command " + parameters[0] + ": " + listeners.stream().filter(listener -> listener.getCommand().equals(parameters[0])).map(Listener::getPattern).collect(Collectors.joining());
-        else
-            return "Error: use following pattern for command " + getCommand() + ": " + getPattern();
-    }
+        if (parameters == null || parameters.length == 0) {
+            return "List of commands: " + listeners.stream()
+                .map(Listener::getCommand).collect(Collectors.joining(", "));
+        } else if (parameters.length == 1) {
+            final String command = parameters[0];
+            String result = listeners.stream()
+                .filter(listener -> listener.getCommand().equals(command))
+                .map(Listener::getPattern).findFirst().orElse("");
 
+            if (!"".equals(result)) {
+                return "Pattern for command " + command + ": " + result;
+            } else {
+                return "Command " + command + " was not found";
+            }
+        } else
+            return "Error: use following pattern for command " + getCommand()
+                + ": " + getPattern();
+    }
 
     @Autowired
     public void context(ApplicationContext context) {
