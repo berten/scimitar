@@ -8,12 +8,13 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>be.deschutter.scimitar.core</groupId>
-    <packaging>pom</packaging>
-    <artifactId>core</artifactId>
-    <modules>
-        <module>listeners</module>
-        <module>domain</module>
-    </modules>
+<packaging>pom</packaging>
+    <groupId>be.deschutter.scimitar.communication</groupId>
+    <artifactId>communication</artifactId>
 
+    <modules>
+        <module>events</module>
+        <module>irc</module>
+        <module>slack</module>
+    </modules>
 </project>

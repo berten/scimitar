@@ -1,6 +1,6 @@
 package be.deschutter.scimitar.ticker.galaxy.config;
 
-import be.deschutter.scimitar.GalaxyEao;
+import be.deschutter.scimitar.galaxy.GalaxyEao;
 import be.deschutter.scimitar.TickerInfo;
 import be.deschutter.scimitar.TickerInfoEao;
 import be.deschutter.scimitar.ticker.galaxy.GalaxyFieldSetMapper;
@@ -29,7 +29,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.PathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.persistence.EntityManager;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;

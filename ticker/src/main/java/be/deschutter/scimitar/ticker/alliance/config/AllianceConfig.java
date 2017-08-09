@@ -1,6 +1,6 @@
 package be.deschutter.scimitar.ticker.alliance.config;
 
-import be.deschutter.scimitar.AllianceEao;
+import be.deschutter.scimitar.alliance.AllianceEao;
 import be.deschutter.scimitar.TickerInfo;
 import be.deschutter.scimitar.TickerInfoEao;
 import be.deschutter.scimitar.ticker.alliance.AllianceFieldSetMapper;
