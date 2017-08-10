@@ -27,6 +27,28 @@ public class Galaxy {
     @Column(nullable = true)
     private int planets;
 
+    @Column(nullable = true)
+    private int dayScoreGrowth = 0;
+    @Column(nullable = true)
+    private int dayValueGrowth = 0;
+    @Column(nullable = true)
+    private int daySizeGrowth = 0;
+    @Column(nullable = true)
+    private int dayXpGrowth = 0;
+    @Column(nullable = true)
+    private int dayPlanetsGrowth = 0;
+
+    @Column(nullable = true)
+    private int scoreGrowth = 0;
+    @Column(nullable = true)
+    private int valueGrowth = 0;
+    @Column(nullable = true)
+    private int sizeGrowth = 0;
+    @Column(nullable = true)
+    private int xpGrowth = 0;
+    @Column(nullable = true)
+    private int planetsGrowth = 0;
+
     public long getTick() {
         return tick;
     }
@@ -131,5 +153,85 @@ public class Galaxy {
 
     public void setXpRank(int xpRank) {
         this.xpRank = xpRank;
+    }
+
+    public int getDayScoreGrowth() {
+        return dayScoreGrowth;
+    }
+
+    public void setDayScoreGrowth(int dayScoreGrowth) {
+        this.dayScoreGrowth = dayScoreGrowth;
+    }
+
+    public int getDayValueGrowth() {
+        return dayValueGrowth;
+    }
+
+    public void setDayValueGrowth(int dayValueGrowth) {
+        this.dayValueGrowth = dayValueGrowth;
+    }
+
+    public int getDaySizeGrowth() {
+        return daySizeGrowth;
+    }
+
+    public void setDaySizeGrowth(int daySizeGrowth) {
+        this.daySizeGrowth = daySizeGrowth;
+    }
+
+    public int getDayXpGrowth() {
+        return dayXpGrowth;
+    }
+
+    public void setDayXpGrowth(int dayXpGrowth) {
+        this.dayXpGrowth = dayXpGrowth;
+    }
+
+    public int getDayPlanetsGrowth() {
+        return dayPlanetsGrowth;
+    }
+
+    public void setDayPlanetsGrowth(int dayPlanetsGrowth) {
+        this.dayPlanetsGrowth = dayPlanetsGrowth;
+    }
+
+    public int getScoreGrowth() {
+        return scoreGrowth;
+    }
+
+    public void setScoreGrowth(int scoreGrowth) {
+        this.scoreGrowth = scoreGrowth;
+    }
+
+    public int getValueGrowth() {
+        return valueGrowth;
+    }
+
+    public void setValueGrowth(int valueGrowth) {
+        this.valueGrowth = valueGrowth;
+    }
+
+    public int getSizeGrowth() {
+        return sizeGrowth;
+    }
+
+    public void setSizeGrowth(int sizeGrowth) {
+        this.sizeGrowth = sizeGrowth;
+    }
+
+    public int getXpGrowth() {
+        return xpGrowth;
+    }
+
+    public void setXpGrowth(int xpGrowth) {
+        this.xpGrowth = xpGrowth;
+    }
+
+    public int getPlanetsGrowth() {
+        return planetsGrowth;
+    }
+
+    public void setPlanetsGrowth(int planetsGrowth) {
+        this.planetsGrowth = planetsGrowth;
     }
 }

@@ -46,8 +46,7 @@ public class HelpListener implements Listener {
                 return "Command " + command + " was not found";
             }
         } else
-            return "Error: use following pattern for command " + getCommand()
-                + ": " + getPattern();
+            return getErrorMessage();
     }
 
     @Autowired

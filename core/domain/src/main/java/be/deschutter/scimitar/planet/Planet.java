@@ -37,6 +37,15 @@ public class Planet {
     @Column(nullable = true)
     private int dayXpGrowth = 0;
 
+    @Column(nullable = true)
+    private int scoreGrowth = 0;
+    @Column(nullable = true)
+    private int valueGrowth = 0;
+    @Column(nullable = true)
+    private int sizeGrowth = 0;
+    @Column(nullable = true)
+    private int xpGrowth = 0;
+
     public int getSizeRank() {
         return sizeRank;
     }
@@ -203,5 +212,37 @@ public class Planet {
 
     public void setDayXpGrowth(int dayXpGrowth) {
         this.dayXpGrowth = dayXpGrowth;
+    }
+
+    public int getScoreGrowth() {
+        return scoreGrowth;
+    }
+
+    public void setScoreGrowth(int scoreGrowth) {
+        this.scoreGrowth = scoreGrowth;
+    }
+
+    public int getValueGrowth() {
+        return valueGrowth;
+    }
+
+    public void setValueGrowth(int valueGrowth) {
+        this.valueGrowth = valueGrowth;
+    }
+
+    public int getSizeGrowth() {
+        return sizeGrowth;
+    }
+
+    public void setSizeGrowth(int sizeGrowth) {
+        this.sizeGrowth = sizeGrowth;
+    }
+
+    public int getXpGrowth() {
+        return xpGrowth;
+    }
+
+    public void setXpGrowth(int xpGrowth) {
+        this.xpGrowth = xpGrowth;
     }
 }

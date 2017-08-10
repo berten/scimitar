@@ -65,7 +65,7 @@ public class Ticker {
     private String allianceFileMissedTicks;
 
 
-    @Scheduled(cron = "0 50 * * * *")
+    @Scheduled(cron = "0 23 * * * *")
     public void tick() {
 
         try {

@@ -74,6 +74,8 @@ public class GalaxyConfig {
                     final TickerInfo tick = tickerInfoEao.findByTick(
                         jobExecution.getJobParameters().getLong("tick"));
 
+                    Long tickToCompareWith = jobExecution.getJobParameters().getLong("compareTick");
+
                     jdbcTemplate.execute(
                         "INSERT into galaxy (tick,galaxy_name,score,size,value,x,xp,y,score_rank,value_rank,size_rank,xp_rank) SELECT tick,galaxy_name,score,size,value,x,xp,y,score_rank,value_rank,size_rank,xp_rank from ("
                             + "  SELECT" + "    *," + "    rank()"
@@ -90,6 +92,19 @@ public class GalaxyConfig {
                         "update galaxy set planets=(select count(*) from planet where planet.x=galaxy.x and planet.y=galaxy.y and planet.tick=galaxy.tick) where tick="
                             + tick.getTick());
 
+                    jdbcTemplate.execute(
+                            "update galaxy set day_score_growth=galaxy.score -(SELECT g2.score from galaxy g2 where g2.x=galaxy.x and g2.y=galaxy.y and tick=" + tickToCompareWith + "), " +
+                                    "day_size_growth=galaxy.size -(SELECT g2.size from galaxy g2 where g2.x=galaxy.x and g2.y=galaxy.y and tick=" + tickToCompareWith + ")," +
+                                    "day_value_growth=galaxy.value -(SELECT g2.value from galaxy g2 where g2.x=galaxy.x and g2.y=galaxy.y and tick=" + tickToCompareWith + ")," +
+                                    "day_xp_growth=galaxy.xp -(SELECT g2.xp from galaxy g2 where g2.x=galaxy.x and g2.y=galaxy.y and tick=" + tickToCompareWith + ")," +
+                                    "day_planets_growth=galaxy.planets -(SELECT g2.planets from galaxy g2 where g2.x=galaxy.x and g2.y=galaxy.y and tick=" + tickToCompareWith + ") where tick=" + tick.getTick());
+
+                    jdbcTemplate.execute(
+                            "update galaxy set score_growth=galaxy.score -(SELECT g2.score from galaxy g2 where g2.x=galaxy.x and g2.y=galaxy.y and tick=" + (tick.getTick() -1) + "), " +
+                                    "size_growth=galaxy.size -(SELECT g2.size from galaxy g2 where g2.x=galaxy.x and  g2.y=galaxy.y and tick=" + (tick.getTick() -1) + ")," +
+                                    "value_growth=galaxy.value -(SELECT g2.value from galaxy g2 where g2.x=galaxy.x and g2.y=galaxy.y and tick=" + (tick.getTick() -1) + ")," +
+                                    "xp_growth=galaxy.xp -(SELECT g2.xp from galaxy g2 where g2.x=galaxy.x and g2.y=galaxy.y and tick=" + (tick.getTick() -1) + ")," +
+                                    "planets_growth=galaxy.planets -(SELECT g2.planets from galaxy g2 where g2.x=galaxy.x and g2.y=galaxy.y and tick=" + (tick.getTick() -1) + ") where tick=" + tick.getTick());
 
 
                     tick.setGalaxies(galaxyEao.countByTick(tick.getTick()));

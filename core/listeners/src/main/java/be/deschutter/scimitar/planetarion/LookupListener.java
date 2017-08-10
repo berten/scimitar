@@ -76,9 +76,6 @@ public class LookupListener implements Listener {
             return getErrorMessage();
     }
 
-    private String getErrorMessage() {
-        return "Error: use following pattern for command " + getCommand() + ": "
-            + getPattern();
-    }
+
 
 }

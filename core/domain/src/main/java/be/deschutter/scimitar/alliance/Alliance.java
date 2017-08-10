@@ -7,21 +7,51 @@ import javax.persistence.*;
 @Table(indexes = {@Index(name = "alliance_name_index", columnList = "alliancename", unique = false)
 })
 public class Alliance {
-    private int countedScoreRank;
     @Id
     private String allianceName;
     @Id
     private long tick;
+
     private int size;
     private int members;
     private long countedScore;
     private long points;
     private long totalScore;
     private long totalValue;
+
+    private int countedScoreRank;
     private int scoreRank;
     private int sizeRank;
     private int valueRank;
     private int pointsRank;
+    private int membersRank;
+
+    @Column(nullable = true)
+    private int dayCountedScoreGrowth = 0;
+    @Column(nullable = true)
+    private int dayScoreGrowth = 0;
+    @Column(nullable = true)
+    private int dayValueGrowth = 0;
+    @Column(nullable = true)
+    private int daySizeGrowth = 0;
+    @Column(nullable = true)
+    private int dayPointsGrowth = 0;
+    @Column(nullable = true)
+    private int dayMembersGrowth = 0;
+
+    @Column(nullable = true)
+    private int countedScoreGrowth = 0;
+    @Column(nullable = true)
+    private int scoreGrowth = 0;
+    @Column(nullable = true)
+    private int valueGrowth = 0;
+    @Column(nullable = true)
+    private int sizeGrowth = 0;
+    @Column(nullable = true)
+    private int pointsGrowth = 0;
+    @Column(nullable = true)
+    private int membersGrowth = 0;
+
 
     public int getCountedScoreRank() {
         return countedScoreRank;
@@ -125,5 +155,109 @@ public class Alliance {
 
     public void setPointsRank(int pointsRank) {
         this.pointsRank = pointsRank;
+    }
+
+    public int getMembersRank() {
+        return membersRank;
+    }
+
+    public void setMembersRank(int membersRank) {
+        this.membersRank = membersRank;
+    }
+
+    public int getDayCountedScoreGrowth() {
+        return dayCountedScoreGrowth;
+    }
+
+    public void setDayCountedScoreGrowth(int dayCountedScoreGrowth) {
+        this.dayCountedScoreGrowth = dayCountedScoreGrowth;
+    }
+
+    public int getDayScoreGrowth() {
+        return dayScoreGrowth;
+    }
+
+    public void setDayScoreGrowth(int dayScoreGrowth) {
+        this.dayScoreGrowth = dayScoreGrowth;
+    }
+
+    public int getDayValueGrowth() {
+        return dayValueGrowth;
+    }
+
+    public void setDayValueGrowth(int dayValueGrowth) {
+        this.dayValueGrowth = dayValueGrowth;
+    }
+
+    public int getDaySizeGrowth() {
+        return daySizeGrowth;
+    }
+
+    public void setDaySizeGrowth(int daySizeGrowth) {
+        this.daySizeGrowth = daySizeGrowth;
+    }
+
+    public int getDayPointsGrowth() {
+        return dayPointsGrowth;
+    }
+
+    public void setDayPointsGrowth(int dayPointsGrowth) {
+        this.dayPointsGrowth = dayPointsGrowth;
+    }
+
+    public int getDayMembersGrowth() {
+        return dayMembersGrowth;
+    }
+
+    public void setDayMembersGrowth(int dayMembersGrowth) {
+        this.dayMembersGrowth = dayMembersGrowth;
+    }
+
+    public int getCountedScoreGrowth() {
+        return countedScoreGrowth;
+    }
+
+    public void setCountedScoreGrowth(int countedScoreGrowth) {
+        this.countedScoreGrowth = countedScoreGrowth;
+    }
+
+    public int getScoreGrowth() {
+        return scoreGrowth;
+    }
+
+    public void setScoreGrowth(int scoreGrowth) {
+        this.scoreGrowth = scoreGrowth;
+    }
+
+    public int getValueGrowth() {
+        return valueGrowth;
+    }
+
+    public void setValueGrowth(int valueGrowth) {
+        this.valueGrowth = valueGrowth;
+    }
+
+    public int getSizeGrowth() {
+        return sizeGrowth;
+    }
+
+    public void setSizeGrowth(int sizeGrowth) {
+        this.sizeGrowth = sizeGrowth;
+    }
+
+    public int getPointsGrowth() {
+        return pointsGrowth;
+    }
+
+    public void setPointsGrowth(int pointsGrowth) {
+        this.pointsGrowth = pointsGrowth;
+    }
+
+    public int getMembersGrowth() {
+        return membersGrowth;
+    }
+
+    public void setMembersGrowth(int membersGrowth) {
+        this.membersGrowth = membersGrowth;
     }
 }

@@ -90,6 +90,14 @@ public class PlanetConfig {
                                         "day_value_growth=planet.value -(SELECT p2.value from planet p2 where p2.id=planet.id and tick=" + tickToCompareWith + ")," +
                                         "day_xp_growth=planet.xp -(SELECT p2.xp from planet p2 where p2.id=planet.id and tick=" + tickToCompareWith + ") where tick=" + tick.getTick());
 
+                        jdbcTemplate.execute(
+                                "update planet set score_growth=planet.score -(SELECT p2.score from planet p2 where p2.id=planet.id and tick=" + (tick.getTick() -1) + "), " +
+                                        "size_growth=planet.size -(SELECT p2.size from planet p2 where p2.id=planet.id and tick=" + (tick.getTick() -1) + ")," +
+                                        "value_growth=planet.value -(SELECT p2.value from planet p2 where p2.id=planet.id and tick=" + (tick.getTick() -1) + ")," +
+                                        "xp_growth=planet.xp -(SELECT p2.xp from planet p2 where p2.id=planet.id and tick=" + (tick.getTick() -1) + ") where tick=" + tick.getTick());
+
+
+
                         tick.setPlanets(planetEao.countByTick(tick.getTick()));
                         tick.setProcessingTimePlanets(
                                 new Date().getTime() - jobExecution

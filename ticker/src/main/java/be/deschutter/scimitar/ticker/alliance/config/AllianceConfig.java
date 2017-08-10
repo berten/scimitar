@@ -1,13 +1,9 @@
 package be.deschutter.scimitar.ticker.alliance.config;
 
-import be.deschutter.scimitar.alliance.AllianceEao;
 import be.deschutter.scimitar.TickerInfo;
 import be.deschutter.scimitar.TickerInfoEao;
-import be.deschutter.scimitar.ticker.alliance.AllianceFieldSetMapper;
-import be.deschutter.scimitar.ticker.alliance.AllianceItemProcessor;
-import be.deschutter.scimitar.ticker.alliance.AllianceStaging;
-import be.deschutter.scimitar.ticker.alliance.AllianceStagingEao;
-import be.deschutter.scimitar.ticker.alliance.AllianceWriter;
+import be.deschutter.scimitar.alliance.AllianceEao;
+import be.deschutter.scimitar.ticker.alliance.*;
 import org.apache.commons.io.FileUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
@@ -62,54 +58,77 @@ public class AllianceConfig {
     @Bean
     public Job allianceListingJob() {
         return jobs.get("AllianceJob").incrementer(new RunIdIncrementer())
-            .listener(new JobExecutionListener() {
-                @Override
-                public void beforeJob(final JobExecution jobExecution) {
-                    allianceStagingEao.deleteAll();
-                }
+                .listener(new JobExecutionListener() {
+                    @Override
+                    public void beforeJob(final JobExecution jobExecution) {
+                        allianceStagingEao.deleteAll();
+                    }
 
-                @Override
-                public void afterJob(final JobExecution jobExecution) {
-                    final TickerInfo tick = tickerInfoEao.findByTick(
-                        jobExecution.getJobParameters().getLong("tick"));
+                    @Override
+                    public void afterJob(final JobExecution jobExecution) {
+                        final TickerInfo tick = tickerInfoEao.findByTick(
+                                jobExecution.getJobParameters().getLong("tick"));
 
-                    jdbcTemplate.execute(
-                        "INSERT INTO alliance (alliance_name, tick,counted_score,members,points,counted_score_rank,size,total_score,total_value,score_rank,value_rank,size_rank,points_rank) SELECT alliance_name, tick,counted_score,members,points,counted_score_rank,size,total_score,total_value,score_rank,value_rank,size_rank,points_rank from ("
-                            + "  SELECT"
-                            + "    alliance_name, tick,counted_score,members,points,rank as counted_score_rank,size,total_score,total_value,"
-                            + "    rank()"
-                            + "    OVER (ORDER BY total_score DESC ) as score_rank,"
-                            + "    rank()"
-                            + "    OVER (ORDER BY total_value DESC ) as value_rank,"
-                            + "    rank()"
-                            + "    OVER (ORDER BY size DESC ) as size_rank,"
-                            + "    rank()"
-                            + "    OVER (ORDER BY points DESC ) as points_rank"
-                            + "  FROM alliance_staging" + ") as alliance_rank");
+                        jdbcTemplate.execute(
+                                "INSERT INTO alliance (alliance_name, tick,counted_score,members,points,counted_score_rank,size,total_score,total_value,score_rank,value_rank,size_rank,points_rank,members_rank) SELECT alliance_name, tick,counted_score,members,points,counted_score_rank,size,total_score,total_value,score_rank,value_rank,size_rank,points_rank,members_rank from ("
+                                        + "  SELECT"
+                                        + "    alliance_name, tick,counted_score,members,points,rank as counted_score_rank,size,total_score,total_value,"
+                                        + "    rank()"
+                                        + "    OVER (ORDER BY total_score DESC ) as score_rank,"
+                                        + "    rank()"
+                                        + "    OVER (ORDER BY total_value DESC ) as value_rank,"
+                                        + "    rank()"
+                                        + "    OVER (ORDER BY size DESC ) as size_rank,"
+                                        + "    rank()"
+                                        + "    OVER (ORDER BY points DESC ) as points_rank,"
+                                        + "    rank()"
+                                        + "    OVER (ORDER BY members DESC ) as members_rank"
+                                        + "  FROM alliance_staging" + ") as alliance_rank");
 
-                    tick.setAlliances(allianceEao.countByTick(tick.getTick()));
-                    tick.setProcessingTimeAlliances(
-                        new Date().getTime() - jobExecution.getStartTime()
-                            .getTime());
-                    tickerInfoEao.saveAndFlush(tick);
-                }
-            }).flow(allianceStep()).end().build();
+
+                        tick.setAlliances(allianceEao.countByTick(tick.getTick()));
+
+
+                        Long tickToCompareWith = jobExecution.getJobParameters().getLong("compareTick");
+                        jdbcTemplate.execute(
+                                "update alliance set day_score_growth=alliance.total_score -(SELECT p2.total_score from alliance p2 where p2.alliance_name=alliance.alliance_name and tick=" + tickToCompareWith + "), " +
+                                        "day_size_growth=alliance.size -(SELECT p2.size from alliance p2 where p2.alliance_name=alliance.alliance_name and tick=" + tickToCompareWith + ")," +
+                                        "day_value_growth=alliance.total_value -(SELECT p2.total_value from alliance p2 where p2.alliance_name=alliance.alliance_name and tick=" + tickToCompareWith + ")," +
+                                        "day_points_growth=alliance.points -(SELECT p2.points from alliance p2 where p2.alliance_name=alliance.alliance_name and tick=" + tickToCompareWith + ")," +
+                                        "day_members_growth=alliance.members -(SELECT p2.members from alliance p2 where p2.alliance_name=alliance.alliance_name and tick=" + tickToCompareWith + ")," +
+                                        "day_counted_score_growth=alliance.counted_score -(SELECT p2.counted_score from alliance p2 where p2.alliance_name=alliance.alliance_name and tick=" + tickToCompareWith + ") where tick=" + tick.getTick());
+
+                        jdbcTemplate.execute(
+                                "update alliance set score_growth=alliance.total_score -(SELECT p2.total_score from alliance p2 where p2.alliance_name=alliance.alliance_name and tick=" + (tick.getTick() - 1) + "), " +
+                                        "size_growth=alliance.size -(SELECT p2.size from alliance p2 where p2.alliance_name=alliance.alliance_name and tick=" + (tick.getTick() - 1) + ")," +
+                                        "value_growth=alliance.total_value -(SELECT p2.total_value from alliance p2 where p2.alliance_name=alliance.alliance_name and tick=" + (tick.getTick() - 1) + ")," +
+                                        "points_growth=alliance.points -(SELECT p2.points from alliance p2 where p2.alliance_name=alliance.alliance_name and tick=" + (tick.getTick() - 1) + ")," +
+                                        "members_growth=alliance.members -(SELECT p2.members from alliance p2 where p2.alliance_name=alliance.alliance_name and tick=" + (tick.getTick() - 1) + ")," +
+                                        "counted_score_growth=alliance.counted_score -(SELECT p2.counted_score from alliance p2 where p2.alliance_name=alliance.alliance_name and tick=" + (tick.getTick() - 1) + ") where tick=" + tick.getTick());
+
+
+                        tick.setProcessingTimeAlliances(
+                                new Date().getTime() - jobExecution.getStartTime()
+                                        .getTime());
+                        tickerInfoEao.saveAndFlush(tick);
+                    }
+                }).flow(allianceStep()).end().build();
     }
 
     @Bean
     public Step allianceStep() {
         return stepBuilderFactory
-            .get("step").<AllianceStaging, AllianceStaging>chunk(
-                1) //important to be one in this case to commit after every line read
-            .reader(allianceReader(null)).processor(allianceItemProcessor)
-            .writer(allianceWriter).faultTolerant().build();
+                .get("step").<AllianceStaging, AllianceStaging>chunk(
+                        1) //important to be one in this case to commit after every line read
+                .reader(allianceReader(null)).processor(allianceItemProcessor)
+                .writer(allianceWriter).faultTolerant().build();
     }
 
     @Bean
     @StepScope
     public FlatFileItemReader<AllianceStaging> allianceReader(
-        @Value("#{jobParameters['allianceFileName']}")
-            String allianceFileName) {
+            @Value("#{jobParameters['allianceFileName']}")
+                    String allianceFileName) {
 
         try {
             File allianceListing = new File("alliance_listing.txt");
@@ -133,8 +152,8 @@ public class AllianceConfig {
         lineTokenizer.setDelimiter("\t");
         lineTokenizer.setStrict(false);
         lineTokenizer.setNames(
-            new String[] { "rank", "alliance_name", "size", "members",
-                "counted_score", "points", "total_score", "total_value" });
+                new String[]{"rank", "alliance_name", "size", "members",
+                        "counted_score", "points", "total_score", "total_value"});
 
         BeanWrapperFieldSetMapper<AllianceStaging> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
         fieldSetMapper.setTargetType(AllianceStaging.class);
