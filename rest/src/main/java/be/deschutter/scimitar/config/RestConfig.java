@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @SpringBootApplication(scanBasePackages = {"be.deschutter"})
 @EntityScan(basePackages = {"be.deschutter"})
 @EnableJpaRepositories(basePackages = {"be.deschutter"})
-public class MvcConfig {
+public class RestConfig {
     public static void main(String[] args) {
-        SpringApplication.run(MvcConfig.class, args);
+        SpringApplication.run(RestConfig.class, args);
     }
 }
