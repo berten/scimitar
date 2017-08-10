@@ -75,24 +75,24 @@ public class LookupListenerTest {
 
     @Test
     public void getResult_galaxy() throws Exception {
-        assertThat(lookupListener.getResult("3", "6")).isEqualTo(
+        assertThat(lookupListener.getResult("user","3", "6")).isEqualTo(
             "3:6 'galaxyname' (8) Score: 1000 (1) Value: 100 (2) Size: 40 (4) XP: 10 (3)");
     }
 
     @Test
     public void getResult_galaxy_DoesNotExist() throws Exception {
-        assertThat(lookupListener.getResult("99", "99"))
+        assertThat(lookupListener.getResult("user","99", "99"))
             .isEqualTo("Galaxy 99:99 does not exist");
     }
 
     @Test
     public void getResult_planet_DoesNotExist() throws Exception {
-        assertThat(lookupListener.getResult("99","99","99")).isEqualTo("Planet 99:99:99 does not exist");
+        assertThat(lookupListener.getResult("user","99","99","99")).isEqualTo("Planet 99:99:99 does not exist");
     }
 
     @Test
     public void getResult_planet() throws Exception {
-        assertThat(lookupListener.getResult("3","6","2")).isEqualTo("3:6:2 (Ter) 'rname of pname' Score: 1000 (1) Value: 100 (2) Size: 40 (4) XP: 10 (3)");
+        assertThat(lookupListener.getResult("user","3","6","2")).isEqualTo("3:6:2 (Ter) 'rname of pname' Score: 1000 (1) Value: 100 (2) Size: 40 (4) XP: 10 (3)");
     }
 
     @Test
@@ -101,7 +101,7 @@ public class LookupListenerTest {
 
     @Test
     public void getResult_ParametersGiveError() throws Exception {
-        assertThat(lookupListener.getResult()).isEqualTo("Error: use following pattern for command lookup: x y [z]");
+        assertThat(lookupListener.getResult("user")).isEqualTo("Error: use following pattern for command lookup: x y [z]");
         assertThat(lookupListener.getResult("1")).isEqualTo("Error: use following pattern for command lookup: x y [z]");
         assertThat(lookupListener.getResult("1","a")).isEqualTo("Error: use following pattern for command lookup: x y [z]");
     }

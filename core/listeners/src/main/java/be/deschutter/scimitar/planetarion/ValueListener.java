@@ -24,7 +24,7 @@ public class ValueListener implements Listener {
     }
 
     @Override
-    public String getResult(String... parameters) {
+    public String getResult(String username, String... parameters) {
         if (parameters != null && parameters.length == 3) {
             try {
                 int x = Integer.parseInt(parameters[0]);

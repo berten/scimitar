@@ -30,7 +30,7 @@ public class HelpListener implements Listener {
     }
 
     @Override
-    public String getResult(String... parameters) {
+    public String getResult(String username, String... parameters) {
         if (parameters == null || parameters.length == 0) {
             return "List of commands: " + listeners.stream()
                 .map(Listener::getCommand).collect(Collectors.joining(", "));

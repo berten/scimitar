@@ -19,7 +19,7 @@
 
     <modules>
         <module>communication</module>
-        <module>web</module>
+        <module>rest</module>
         <module>core</module>
         <module>ticker</module>
     </modules>

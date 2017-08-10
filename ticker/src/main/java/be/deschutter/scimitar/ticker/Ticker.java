@@ -65,7 +65,7 @@ public class Ticker {
     private String allianceFileMissedTicks;
 
 
-    @Scheduled(cron = "0 23 * * * *")
+    @Scheduled(cron = "0 2 * * * *")
     public void tick() {
 
         try {
@@ -103,7 +103,7 @@ public class Ticker {
 
             } else {
 
-                for (long i = previousTick + 1; i < currentTick; i++) {
+                for (long i = previousTick + 1; i <= currentTick; i++) {
                     tickerInfoEao.saveAndFlush(new TickerInfo(i));
                     Long tickToCompareWith = tickToCompareWith(i);
                     JobParameters param = new JobParametersBuilder()

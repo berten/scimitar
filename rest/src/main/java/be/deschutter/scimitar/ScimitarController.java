@@ -1,4 +1,4 @@
-package be.deschutter.planetarion.katana.controller;
+package be.deschutter.scimitar;
 
 import be.deschutter.scimitar.events.Event;
 import be.deschutter.scimitar.planetarion.Listener;
@@ -19,11 +19,10 @@ private List<Listener> listeners;
     ResponseEntity<Event> getStatus(@RequestBody Event event) {
         for (Listener listener : listeners) {
             if(listener.getCommand().equals(event.getCommand())) {
-                event.setReply(listener.getResult(event.getParameters()));
+                event.setReply(listener.getResult(event.getLoggedInUsername(),event.getParameters()));
                 return new ResponseEntity<>(event, HttpStatus.OK);
             }
         }
-
         return new ResponseEntity<>(event, HttpStatus.NO_CONTENT);
     }
 }

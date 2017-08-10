@@ -17,7 +17,7 @@ public class LookupListener implements Listener {
 
     @Autowired
     public LookupListener(final PlanetEao planetEao,
-        final GalaxyEao galaxyEao) {
+                          final GalaxyEao galaxyEao) {
         this.planetEao = planetEao;
         this.galaxyEao = galaxyEao;
     }
@@ -33,7 +33,7 @@ public class LookupListener implements Listener {
     }
 
     @Override
-    public String getResult(String... parameters) {
+    public String getResult(String username, String... parameters) {
 
         if (parameters != null && parameters.length == 2) {
             try {
@@ -44,11 +44,11 @@ public class LookupListener implements Listener {
                 if (g == null)
                     return "Galaxy " + x + ":" + y + " does not exist";
                 return format(
-                    "%d:%d '%s' (%d) Score: %d (%d) Value: %d (%d) Size: %d (%d) XP: %d (%d)",
-                    g.getX(), g.getY(), g.getGalaxyName(), g.getPlanets(),
-                    g.getScore(), g.getScoreRank(), g.getValue(),
-                    g.getValueRank(), g.getSize(), g.getSizeRank(), g.getXp(),
-                    g.getXpRank());
+                        "%d:%d '%s' (%d) Score: %d (%d) Value: %d (%d) Size: %d (%d) XP: %d (%d)",
+                        g.getX(), g.getY(), g.getGalaxyName(), g.getPlanets(),
+                        g.getScore(), g.getScoreRank(), g.getValue(),
+                        g.getValueRank(), g.getSize(), g.getSizeRank(), g.getXp(),
+                        g.getXpRank());
             } catch (NumberFormatException e) {
                 return getErrorMessage();
             }
@@ -59,23 +59,20 @@ public class LookupListener implements Listener {
                 int y = Integer.parseInt(parameters[1]);
                 int z = Integer.parseInt(parameters[2]);
                 Planet p = planetEao
-                    .findFirstByXAndYAndZOrderByTickDesc(x, y, z);
+                        .findFirstByXAndYAndZOrderByTickDesc(x, y, z);
                 if (p == null)
                     return "Planet " + x + ":" + y + ":" + z
-                        + " does not exist";
+                            + " does not exist";
                 return format(
-                    "%d:%d:%d (%s) '%s of %s' Score: %d (%d) Value: %d (%d) Size: %d (%d) XP: %d (%d)",
-                    p.getX(), p.getY(), p.getZ(), p.getRace(), p.getRulerName(),
-                    p.getPlanetName(), p.getScore(), p.getScoreRank(),
-                    p.getValue(), p.getValueRank(), p.getSize(),
-                    p.getSizeRank(), p.getXp(), p.getXpRank());
+                        "%d:%d:%d (%s) '%s of %s' Score: %d (%d) Value: %d (%d) Size: %d (%d) XP: %d (%d)",
+                        p.getX(), p.getY(), p.getZ(), p.getRace(), p.getRulerName(),
+                        p.getPlanetName(), p.getScore(), p.getScoreRank(),
+                        p.getValue(), p.getValueRank(), p.getSize(),
+                        p.getSizeRank(), p.getXp(), p.getXpRank());
             } catch (NumberFormatException e) {
                 return getErrorMessage();
             }
         } else
             return getErrorMessage();
     }
-
-
-
 }

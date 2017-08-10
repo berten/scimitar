@@ -49,25 +49,25 @@ public class ValueListenerTest {
 
     @Test
     public void getResult() throws Exception {
-        assertThat(valueListener.getResult("1", "2", "3")).isEqualTo("Value in the last 3 ticks on 1:2:3 pt1 1000 (10)| pt2 3400 (2400)| pt3 1.4M (1.4M)");
+        assertThat(valueListener.getResult("user","1", "2", "3")).isEqualTo("Value in the last 3 ticks on 1:2:3 pt1 1000 (10)| pt2 3400 (2400)| pt3 1.4M (1.4M)");
 
     }
 
     @Test
     public void getResult_toFewParamters() throws Exception {
-        assertThat(valueListener.getResult("1", "2")).isEqualTo("Error: use following pattern for command value: x y z");
+        assertThat(valueListener.getResult("user","1", "2")).isEqualTo("Error: use following pattern for command value: x y z");
 
     }
 
     @Test
     public void getResult_toManyParamters() throws Exception {
-        assertThat(valueListener.getResult("1", "2", "3", "4")).isEqualTo("Error: use following pattern for command value: x y z");
+        assertThat(valueListener.getResult("user","1", "2", "3", "4")).isEqualTo("Error: use following pattern for command value: x y z");
 
     }
 
     @Test
     public void getResult_ParameterNotNumber() throws Exception {
-        assertThat(valueListener.getResult("1", "2", "z")).isEqualTo("Error: use following pattern for command value: x y z");
+        assertThat(valueListener.getResult("user","1", "2", "z")).isEqualTo("Error: use following pattern for command value: x y z");
     }
 
 }

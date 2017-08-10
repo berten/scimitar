@@ -1,4 +1,4 @@
-package be.deschutter.planetarion.katana;
+package be.deschutter.scimitar.config;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
