@@ -4,10 +4,10 @@ import javax.persistence.*;
 
 @Entity
 @IdClass(PlanetPk.class)
-@Table(indexes = {@Index(name="planet_x_index",columnList="x",unique = false),
-        @Index(name="planet_y_index",columnList="y",unique = false),
-        @Index(name="planet_xytick_index",columnList="x,y,tick",unique = false),
-        @Index(name="planet_tick_index",columnList="tick",unique = false)})
+@Table(indexes = {@Index(name = "planet_x_index", columnList = "x", unique = false),
+        @Index(name = "planet_y_index", columnList = "y", unique = false),
+        @Index(name = "planet_xytick_index", columnList = "x,y,tick", unique = false),
+        @Index(name = "planet_tick_index", columnList = "tick", unique = false)})
 public class Planet {
     @Id
     private long tick;
@@ -28,6 +28,14 @@ public class Planet {
     private int sizeRank;
     private int valueRank;
     private int xpRank;
+    @Column(nullable = true)
+    private int dayScoreGrowth = 0;
+    @Column(nullable = true)
+    private int dayValueGrowth = 0;
+    @Column(nullable = true)
+    private int daySizeGrowth = 0;
+    @Column(nullable = true)
+    private int dayXpGrowth = 0;
 
     public int getSizeRank() {
         return sizeRank;
@@ -163,5 +171,37 @@ public class Planet {
 
     public void setXpRank(final int xpRank) {
         this.xpRank = xpRank;
+    }
+
+    public int getDayScoreGrowth() {
+        return dayScoreGrowth;
+    }
+
+    public void setDayScoreGrowth(int dayScoreGrowth) {
+        this.dayScoreGrowth = dayScoreGrowth;
+    }
+
+    public int getDayValueGrowth() {
+        return dayValueGrowth;
+    }
+
+    public void setDayValueGrowth(int dayValueGrowth) {
+        this.dayValueGrowth = dayValueGrowth;
+    }
+
+    public int getDaySizeGrowth() {
+        return daySizeGrowth;
+    }
+
+    public void setDaySizeGrowth(int daySizeGrowth) {
+        this.daySizeGrowth = daySizeGrowth;
+    }
+
+    public int getDayXpGrowth() {
+        return dayXpGrowth;
+    }
+
+    public void setDayXpGrowth(int dayXpGrowth) {
+        this.dayXpGrowth = dayXpGrowth;
     }
 }

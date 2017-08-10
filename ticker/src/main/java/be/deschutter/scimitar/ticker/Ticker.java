@@ -38,7 +38,10 @@ public class Ticker {
 
     @Autowired
     private TickerInfoEao tickerInfoEao;
-
+    @Value("${ticksInFirstDay}")
+    private int ticksInFirstDay;
+    @Value("${ticksInDay}")
+    private int ticksInDay;
 
     @Value("${botfiles.planet.url}")
     private String planetFile;
@@ -62,7 +65,7 @@ public class Ticker {
     private String allianceFileMissedTicks;
 
 
-    @Scheduled(cron = "0 15 * * * *")
+    @Scheduled(cron = "0 50 * * * *")
     public void tick() {
 
         try {
@@ -81,19 +84,20 @@ public class Ticker {
             if (previousTick + 1 == currentTick) {
 
                 tickerInfoEao.saveAndFlush(new TickerInfo(currentTick));
+                Long tickToCompareWith = tickToCompareWith(currentTick);
                 JobParameters param = new JobParametersBuilder()
                         .addString("planetFileName", planetFile)
-                        .addLong("tick", currentTick).toJobParameters();
+                        .addLong("tick", currentTick).addLong("compareTick", tickToCompareWith).toJobParameters();
                 jobLauncher.run(planetListingJob, param);
 
                 param = new JobParametersBuilder()
                         .addString("galaxyFileName", galaxyFile)
-                        .addLong("tick", currentTick).toJobParameters();
+                        .addLong("tick", currentTick).addLong("compareTick", tickToCompareWith).toJobParameters();
                 jobLauncher.run(galaxyListingJob, param);
 
                 param = new JobParametersBuilder()
                         .addString("allianceFileName", allianceFile)
-                        .addLong("tick", currentTick).toJobParameters();
+                        .addLong("tick", currentTick).addLong("compareTick", tickToCompareWith).toJobParameters();
                 jobLauncher.run(allianceListingJob, param);
 
 
@@ -101,19 +105,20 @@ public class Ticker {
 
                 for (long i = previousTick + 1; i < currentTick; i++) {
                     tickerInfoEao.saveAndFlush(new TickerInfo(i));
+                    Long tickToCompareWith = tickToCompareWith(i);
                     JobParameters param = new JobParametersBuilder()
                             .addString("planetFileName", planetFileMissedTicks.replace("%tick", "" + i))
-                            .addLong("tick", i).toJobParameters();
+                            .addLong("tick", i).addLong("compareTick", tickToCompareWith).toJobParameters();
                     jobLauncher.run(planetListingJob, param);
 
                     param = new JobParametersBuilder()
                             .addString("galaxyFileName", galaxyFileMissedTicks.replace("%tick", "" + i))
-                            .addLong("tick", i).toJobParameters();
+                            .addLong("tick", i).addLong("compareTick", tickToCompareWith).toJobParameters();
                     jobLauncher.run(galaxyListingJob, param);
 
                     param = new JobParametersBuilder()
                             .addString("allianceFileName", allianceFileMissedTicks.replace("%tick", "" + i))
-                            .addLong("tick", i).toJobParameters();
+                            .addLong("tick", i).addLong("compareTick", tickToCompareWith).toJobParameters();
                     jobLauncher.run(allianceListingJob, param);
                 }
 
@@ -121,5 +126,14 @@ public class Ticker {
         } catch (JobExecutionAlreadyRunningException | JobRestartException | JobParametersInvalidException | JobInstanceAlreadyCompleteException | IOException e) {
             e.printStackTrace();
         }
+    }
+// This is not perfect etc, but it's tested. it works!!
+    public Long tickToCompareWith(long currentTick) {
+        if (currentTick <= ticksInFirstDay) return 1L;
+
+        long l = (((currentTick - ticksInFirstDay) / ticksInDay) * ticksInDay) + ticksInFirstDay;
+        if (l == currentTick) return currentTick - ticksInDay;
+        return l;
+
     }
 }

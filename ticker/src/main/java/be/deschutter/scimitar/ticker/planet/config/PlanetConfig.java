@@ -1,13 +1,9 @@
 package be.deschutter.scimitar.ticker.planet.config;
 
-import be.deschutter.scimitar.planet.PlanetEao;
 import be.deschutter.scimitar.TickerInfo;
 import be.deschutter.scimitar.TickerInfoEao;
-import be.deschutter.scimitar.ticker.planet.PlanetFieldSetMapper;
-import be.deschutter.scimitar.ticker.planet.PlanetItemProcessor;
-import be.deschutter.scimitar.ticker.planet.PlanetStaging;
-import be.deschutter.scimitar.ticker.planet.PlanetStagingEao;
-import be.deschutter.scimitar.ticker.planet.PlanetWriter;
+import be.deschutter.scimitar.planet.PlanetEao;
+import be.deschutter.scimitar.ticker.planet.*;
 import org.apache.commons.io.FileUtils;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
@@ -62,55 +58,65 @@ public class PlanetConfig {
     @Bean
     public Job planetListingJob() {
         return jobs.get("PlanetJob").incrementer(new RunIdIncrementer())
-            .listener(new JobExecutionListener() {
-                @Override
-                public void beforeJob(final JobExecution jobExecution) {
-                    planetStagingEao.deleteAll();
-                }
+                .listener(new JobExecutionListener() {
+                    @Override
+                    public void beforeJob(final JobExecution jobExecution) {
+                        planetStagingEao.deleteAll();
+                    }
 
-                @Override
-                public void afterJob(final JobExecution jobExecution) {
-                    final TickerInfo tick = tickerInfoEao.findByTick(
-                        jobExecution.getJobParameters().getLong("tick"));
+                    @Override
+                    public void afterJob(final JobExecution jobExecution) {
+                        final TickerInfo tick = tickerInfoEao.findByTick(
+                                jobExecution.getJobParameters().getLong("tick"));
 
-                    jdbcTemplate.execute(
-                        "INSERT into planet (id,tick,planet_name,race,ruler_name,score,size,special,value,x,xp,y,z,score_rank,value_rank,size_rank,xp_rank) SELECT id,tick,planet_name,race,ruler_name,score,size,special,value,x,xp,y,z,score_rank,value_rank,size_rank,xp_rank from ("
-                            + "  SELECT" + "    *," + "    rank()"
-                            + "    OVER (ORDER BY score DESC ) as score_rank,"
-                            + "    rank()"
-                            + "    OVER (ORDER BY value DESC )as value_rank,"
-                            + "    rank()"
-                            + "    OVER (ORDER BY size DESC )as size_rank,"
-                            + "    rank()"
-                            + "    OVER (ORDER BY xp DESC )as xp_rank"
-                            + "  FROM planet_staging" + ") as planet_rank");
+                        jdbcTemplate.execute(
+                                "INSERT into planet (id,tick,planet_name,race,ruler_name,score,size,special,value,x,xp,y,z,score_rank,value_rank,size_rank,xp_rank) SELECT id,tick,planet_name,race,ruler_name,score,size,special,value,x,xp,y,z,score_rank,value_rank,size_rank,xp_rank from ("
+                                        + "  SELECT" + "    *," + "    rank()"
+                                        + "    OVER (ORDER BY score DESC ) as score_rank,"
+                                        + "    rank()"
+                                        + "    OVER (ORDER BY value DESC )as value_rank,"
+                                        + "    rank()"
+                                        + "    OVER (ORDER BY size DESC )as size_rank,"
+                                        + "    rank()"
+                                        + "    OVER (ORDER BY xp DESC )as xp_rank"
+                                        + "  FROM planet_staging" + ") as planet_rank");
 
+                        //5,29,53
 
-                    tick.setPlanets(planetEao.countByTick(tick.getTick()));
-                    tick.setProcessingTimePlanets(
-                        new Date().getTime() - jobExecution
-                            .getStartTime().getTime());
-                    tickerInfoEao.save(tick);
+                        Long tickToCompareWith = jobExecution.getJobParameters().getLong("compareTick");
+                        jdbcTemplate.execute(
+                                "update planet set day_score_growth=planet.score -(SELECT p2.score from planet p2 where p2.id=planet.id and tick=" + tickToCompareWith + "), " +
+                                        "day_size_growth=planet.size -(SELECT p2.size from planet p2 where p2.id=planet.id and tick=" + tickToCompareWith + ")," +
+                                        "day_value_growth=planet.value -(SELECT p2.value from planet p2 where p2.id=planet.id and tick=" + tickToCompareWith + ")," +
+                                        "day_xp_growth=planet.xp -(SELECT p2.xp from planet p2 where p2.id=planet.id and tick=" + tickToCompareWith + ") where tick=" + tick.getTick());
 
-                    tickerInfoEao.saveAndFlush(tick);
-                }
-            }).flow(planetStep()).end().build();
+                        tick.setPlanets(planetEao.countByTick(tick.getTick()));
+                        tick.setProcessingTimePlanets(
+                                new Date().getTime() - jobExecution
+                                        .getStartTime().getTime());
+                        tickerInfoEao.save(tick);
+
+                        tickerInfoEao.saveAndFlush(tick);
+                    }
+                }).flow(planetStep()).end().build();
     }
+
+
 
     @Bean
     public Step planetStep() {
         return stepBuilderFactory
-            .get("step").<PlanetStaging, PlanetStaging>chunk(
-                1) //important to be one in this case to commit after every line read
-            .reader(planetReader(null)).processor(planetItemProcessor)
-            .writer(planetWriter).faultTolerant().build();
+                .get("step").<PlanetStaging, PlanetStaging>chunk(
+                        1) //important to be one in this case to commit after every line read
+                .reader(planetReader(null)).processor(planetItemProcessor)
+                .writer(planetWriter).faultTolerant().build();
     }
 
     @Bean
     @StepScope
     public FlatFileItemReader<PlanetStaging> planetReader(
-        @Value("#{jobParameters['planetFileName']}")
-            String planetFileName) {
+            @Value("#{jobParameters['planetFileName']}")
+                    String planetFileName) {
 
         try {
             File planetListing = new File("planet_listing.txt");
@@ -133,8 +139,8 @@ public class PlanetConfig {
         lineTokenizer.setDelimiter("\t");
         lineTokenizer.setStrict(false);
         lineTokenizer.setNames(
-            new String[] { "id", "x", "y", "z", "planet_name", "ruler_name",
-                "race", "size", "score", "value", "xp", "special" });
+                new String[]{"id", "x", "y", "z", "planet_name", "ruler_name",
+                        "race", "size", "score", "value", "xp", "special"});
 
         BeanWrapperFieldSetMapper<PlanetStaging> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
         fieldSetMapper.setTargetType(PlanetStaging.class);
