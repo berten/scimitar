@@ -52,13 +52,13 @@ public class RoidcostListener implements Listener {
     private String bepaalRoidCost(final Long roids, final Long valueCost,
         final Double miningBonus) {
         final Double ticksToMakeUpLostValue = calculateTicks(roids, valueCost,
-            miningBonus, 0d);
+            miningBonus);
 
         StringBuilder b = new StringBuilder();
         paConfig.getGovernments().stream()
             .filter(government -> government.getProductionCostBonus() != 0)
             .forEach(government -> {
-                final Double ticks = ticksToMakeUpLostValue * (1 - government
+                final Double ticks = ticksToMakeUpLostValue * (1 + government
                     .getProductionCostBonus());
 
                 b.append(String
@@ -75,10 +75,10 @@ public class RoidcostListener implements Listener {
     }
 
     private Double calculateTicks(final Long roids, final Long valueCost,
-        final Double miningBonus, final Double productionCostBonus) {
+        final Double miningBonus) {
         final Double miningPerRoid = paConfig.getMiningPerRoid();
         final Double valuePerResource =
-            paConfig.getValuePerResource() * (1 + productionCostBonus);
+            paConfig.getValuePerResource();
 
         final Double extraResourcesPerTick =
             (roids * miningPerRoid) + ((roids * miningPerRoid) * (miningBonus

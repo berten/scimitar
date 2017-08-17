@@ -60,12 +60,12 @@ private PaConfig paConfig;
         final List<Government> governments = new ArrayList<>();
         final Government demo = new Government();
         demo.setCode("Demo");
-        demo.setProductionCostBonus(0.08);
+        demo.setProductionCostBonus(-0.08);
         governments.add(demo);
 
         final Government tot = new Government();
         tot.setCode("Tot");
-        tot.setProductionCostBonus(0.08);
+        tot.setProductionCostBonus(-0.08);
         governments.add(tot);
 
 
