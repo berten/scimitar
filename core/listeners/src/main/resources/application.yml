@@ -53,7 +53,7 @@ pa:
         -   name: Democracy
             code: Demo
             miningBonus: 0
-            productionCostBonus: -0.8
+            productionCostBonus: 0.8
             researchBonus: 0.3
             stealthBonus: 0.1
             constructionBonus: 0
