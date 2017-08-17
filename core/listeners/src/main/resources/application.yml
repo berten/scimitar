@@ -1,0 +1,99 @@
+pa:
+    races:
+        -   name: terran
+            code: ter
+            productionBonus: 0.1
+            stealthGrowth: 6
+            constructionBase: 125
+            researchBase: 105
+            maxStealth: 80
+        -   name: cathaar
+            code: cat
+            productionBonus: 0
+            stealthGrowth: 10
+            constructionBase: 90
+            researchBase: 125
+            maxStealth: 80
+            salvageBonus: 0.4
+        -   name: xandithrii
+            code: xan
+            productionBonus: 0.1
+            stealthGrowth: 4
+            constructionBase: 110
+            researchBase: 95
+            maxStealth: 80
+        -   name: zikonian
+            code: zik
+            productionBonus: 0.2
+            stealthGrowth: 6
+            constructionBase: 100
+            researchBase: 105
+            maxStealth: 85
+        -   name: eitraides
+            code: etd
+            productionBonus: 0
+            stealthGrowth: 6
+            constructionBase: 115
+            researchBase: 100
+            maxStealth: 85
+            universeTradeTax: 0.05
+    miningPerRoid: 250
+    maxCap: 0.20
+    valuePerResource: 0.01
+    governments:
+        -   name: Corporatism
+            code: Corp
+            miningBonus: 0.24
+            researchBonus: -0.15
+            constructionBonus: -0.15
+            alertBonus: -0.05
+            productionCostBonus: 0
+            stealthBonus: 0
+            productionTimeBonus: 0
+        -   name: Democracy
+            code: Demo
+            miningBonus: 0
+            productionCostBonus: -0.8
+            researchBonus: 0.3
+            stealthBonus: 0.1
+            constructionBonus: 0
+            alertBonus: -0.10
+            productionTimeBonus: 0
+        -   name: Nationalism
+            code: Nat
+            miningBonus: 0.16
+            productionCostBonus: 0
+            researchBonus: 0.2
+            stealthBonus: 0.0
+            constructionBonus: -0.15
+            alertBonus: -0.25
+            productionTimeBonus: -0.1
+        -   name: Socialism
+            code: Soc
+            miningBonus: 0.1
+            productionCostBonus: 0
+            researchBonus: 0.15
+            stealthBonus: 0.1
+            constructionBonus: 0.15
+            alertBonus: 0.0
+            productionTimeBonus: 0.2
+        -   name: Totalitarianism
+            code: Tot
+            miningBonus: 0
+            productionCostBonus: -0.08
+            researchBonus: -0.05
+            stealthBonus: 0
+            constructionBonus: 0.25
+            alertBonus: -0.15
+            productionTimeBonus: -0.1
+        -   name: Anarchy
+            code: Ana
+            miningBonus: -0.25
+            productionCostBonus: -0
+            researchBonus: -0.25
+            stealthBonus: 0
+            constructionBonus: -0.25
+            alertBonus: -0.25
+            productionTimeBonus: 0
+
+

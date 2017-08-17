@@ -7,6 +7,7 @@ import java.util.TreeMap;
 public class Formatter {
 
     private static final NavigableMap<Long, String> suffixes = new TreeMap<>();
+
     static {
         suffixes.put(1_000L, "k");
         suffixes.put(1_000_000L, "M");
@@ -18,16 +19,46 @@ public class Formatter {
 
     public static String format(long value) {
         //Long.MIN_VALUE == -Long.MIN_VALUE so we need an adjustment here
-        if (value == Long.MIN_VALUE) return format(Long.MIN_VALUE + 1);
-        if (value < 0) return "-" + format(-value);
-        if (value < 10000) return Long.toString(value); //deal with easy case
+        if (value == Long.MIN_VALUE)
+            return format(Long.MIN_VALUE + 1);
+        if (value < 0)
+            return "-" + format(-value);
+        if (value < 10000)
+            return Long.toString(value); //deal with easy case
 
         Map.Entry<Long, String> e = suffixes.floorEntry(value);
         Long divideBy = e.getKey();
         String suffix = e.getValue();
 
-        long truncated = value / (divideBy / 10); //the number part of the output times 10
-        boolean hasDecimal = truncated < 100 && (truncated / 10d) != (truncated / 10);
-        return hasDecimal ? (truncated / 10d) + suffix : (truncated / 10) + suffix;
+        long truncated =
+            value / (divideBy / 10); //the number part of the output times 10
+        boolean hasDecimal =
+            truncated < 100 && (truncated / 10d) != (truncated / 10);
+        return hasDecimal ?
+            (truncated / 10d) + suffix :
+            (truncated / 10) + suffix;
+    }
+
+    public static Long deFormat(String value) {
+        if (isNumeric(value))
+            return Long.parseLong(value);
+        else {
+            value = value.toUpperCase();
+            for (Map.Entry<Long, String> longStringEntry : suffixes
+                .entrySet()) {
+                if (value.contains(longStringEntry.getValue().toUpperCase())) {
+                    value = value.replace(longStringEntry.getValue().toUpperCase(),"");
+                    return Long.parseLong(value) * longStringEntry.getKey();
+                }
+            }
+
+        }
+            return 0L;
+    }
+
+    public static boolean isNumeric(String str) {
+        return str.matches(
+            "-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
+
     }
 }

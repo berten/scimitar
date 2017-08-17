@@ -5,6 +5,7 @@ import be.deschutter.scimitar.planet.PlanetEao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,8 @@ public class ValueListener implements Listener {
                 if (p == null || p.isEmpty())
                     return "Planet " + x + ":" + y + ":" + z
                             + " does not exist";
-                String valueString = p.stream().sorted((o1, o2) -> Long.compare(o1.getTick(), o2.getTick())).map(planet -> String.format(" pt%d %s (%s)", planet.getTick(), Formatter.format(planet.getValue()), Formatter.format(planet.getValueGrowth()))).collect(Collectors.joining("|"));
+                String valueString = p.stream().sorted(
+                    Comparator.comparingLong(Planet::getTick)).map(planet -> String.format(" pt%d %s (%s)", planet.getTick(), Formatter.format(planet.getValue()), Formatter.format(planet.getValueGrowth()))).collect(Collectors.joining("|"));
 
                 return String.format("Value in the last %d ticks on %d:%d:%d%s", p.size(), x, y, z, valueString);
             } catch (NumberFormatException e) {
