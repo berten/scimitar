@@ -8,12 +8,17 @@ import org.pircbotx.hooks.events.MessageEvent;
 import org.pircbotx.hooks.types.GenericMessageEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
-public class ScimitarImpl extends ListenerAdapter<PircBotX> implements Scimitar {
-
+public class ScimitarImpl extends ListenerAdapter<PircBotX>
+    implements Scimitar {
 
     @Autowired
     private EventFactory eventFactory;
@@ -30,12 +35,26 @@ public class ScimitarImpl extends ListenerAdapter<PircBotX> implements Scimitar 
     }
 
     @Override
-    public void onMessage(MessageEvent messageEvent) throws Exception {
+    public void onMessage(MessageEvent messageEvent) {
         Event event = eventFactory.makeEvent(messageEvent);
 
         RestTemplate restTemplate = new RestTemplate();
-        Event reply = restTemplate.postForObject("http://localhost:8080/scimitar", event, Event.class);
-        reply(reply,messageEvent.getBot());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+        headers.set("loggedInUsername", event.getLoggedInUsername());
+
+        HttpEntity<Event> e = new HttpEntity<>(event, headers);
+
+        try {
+            ResponseEntity<Event> reply = restTemplate
+                .exchange("http://localhost:8080/scimitar", HttpMethod.POST, e,
+                    Event.class);
+            reply(reply.getBody(), messageEvent.getBot());
+        } catch (HttpClientErrorException ex) {
+            event.setReply("No access");
+            reply(event, messageEvent.getBot());
+        }
 
     }
 

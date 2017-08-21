@@ -2,10 +2,13 @@ package be.deschutter.scimitar.planetarion;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.Collection;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 @Component
@@ -31,9 +34,19 @@ public class HelpListener implements Listener {
 
     @Override
     public String getResult(String username, String... parameters) {
+
         if (parameters == null || parameters.length == 0) {
-            return "List of commands: " + listeners.stream()
-                .map(Listener::getCommand).collect(Collectors.joining(", "));
+            StringJoiner joiner = new StringJoiner(", ");
+            listeners.forEach(listener -> {
+                try {
+                    String command = listener.getCommand();
+                    joiner.add(command);
+                } catch (AccessDeniedException exception) {
+                    // Do Nothing. This is one of the rare cases where we don't want to handle an exception.
+                    // This will result in the command not being in the !help list if you don't have access to it
+                }
+            });
+            return "List of commands: " + joiner.toString();
         } else if (parameters.length == 1) {
             final String command = parameters[0];
             String result = listeners.stream()
