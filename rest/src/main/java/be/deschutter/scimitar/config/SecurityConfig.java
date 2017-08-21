@@ -120,7 +120,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         s.addRole("HC");
         s.addRole("BC");
         s.addRole("ADMIN");
-        //s.addRole("MEMBER");
+        s.addRole("MEMBER");
         s.addRole("ANONYMOUS");
         scimitarUserEao.saveAndFlush(s);
     }

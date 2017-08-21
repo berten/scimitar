@@ -14,10 +14,13 @@ public class ScimitarUser {
     @Id
     @GeneratedValue
     private Integer id;
-    @OneToMany(cascade = CascadeType.PERSIST,fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     private Set<Role> roles = new HashSet<>();
     private String username;
     private String password;
+    private String email;
+    private String phoneNumber;
+    private String planetId;
 
     public Integer getId() {
         return id;
@@ -51,9 +54,33 @@ public class ScimitarUser {
         this.roles = roles;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(final String email) {
+        this.email = email;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(final String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
     public void addRole(final String role) {
-        if(roles == null)
+        if (roles == null)
             roles = new HashSet<>();
         roles.add(new Role(role));
+    }
+
+    public void setPlanetId(final String planetId) {
+        this.planetId = planetId;
+    }
+
+    public String getPlanetId() {
+        return planetId;
     }
 }
