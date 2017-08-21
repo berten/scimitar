@@ -7,8 +7,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,6 +28,9 @@ public class ChangeUserListenerTest {
 
         when(scimitarUserEao.findByUsernameIgnoreCase("userToChange"))
             .thenReturn(user);
+        when(scimitarUserEao.saveAndFlush(any(ScimitarUser.class))).then(
+            (Answer<ScimitarUser>) invocationOnMock -> (ScimitarUser) invocationOnMock
+                .getArguments()[0]);
     }
 
     @Test
@@ -114,7 +119,7 @@ public class ChangeUserListenerTest {
         user.addRole(RoleEnum.ADMIN);
         user.addRole(RoleEnum.MEMBER);
         assertThat(changeUserListener
-            .getResult("Berten", "userToChange", "remove", "HC", "ADMIN"))
+            .getResult("Berten", "userToChange", "remove", "hc", "ADMIN"))
             .isEqualTo("New access for users userToChange: MEMBER");
 
         final ArgumentCaptor<ScimitarUser> userCaptor = ArgumentCaptor

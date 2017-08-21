@@ -69,7 +69,7 @@ public class AddUserListenerTest {
     public void getResult_NewUser() throws Exception {
 
         assertThat(
-            addUserListener.getResult("Berten", "newUser", "HC", "ADMIN"))
+            addUserListener.getResult("Berten", "newUser", "HC", "admin"))
             .isEqualTo("User newUser added with roles: ADMIN,HC");
         final ArgumentCaptor<ScimitarUser> captor = ArgumentCaptor
             .forClass(ScimitarUser.class);

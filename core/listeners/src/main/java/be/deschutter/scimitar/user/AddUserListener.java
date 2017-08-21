@@ -64,8 +64,8 @@ public class AddUserListener implements Listener {
                 u.setUsername(usernameToAdd);
                 IntStream.range(1, parameters.length).filter(
                     i -> stream(RoleEnum.values()).map(Enum::name)
-                        .collect(Collectors.toList()).contains(parameters[i]))
-                    .mapToObj(i -> RoleEnum.valueOf(parameters[i]))
+                        .collect(Collectors.toList()).contains(parameters[i].toUpperCase()))
+                    .mapToObj(i -> RoleEnum.valueOf(parameters[i].toUpperCase()))
                     .forEach(u::addRole);
                 u = scimitarUserEao.saveAndFlush(u);
                 return makeReturnString(u);

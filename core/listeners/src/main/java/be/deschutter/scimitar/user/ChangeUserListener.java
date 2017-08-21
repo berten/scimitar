@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
@@ -37,11 +38,12 @@ public class ChangeUserListener implements Listener {
     }
 
     @Override
+    @Transactional
     public String getResult(final String username, final String... parameters) {
         if (parameters.length < 3)
             return getErrorMessage();
         else {
-            final ScimitarUser user = scimitarUserEao
+            ScimitarUser user = scimitarUserEao
                 .findByUsernameIgnoreCase(parameters[0]);
             if (user == null)
                 return "Error: Unknown user " + parameters[0];
@@ -49,19 +51,23 @@ public class ChangeUserListener implements Listener {
                 switch (parameters[1].toUpperCase()) {
                 case "ADD":
                     for (int i = 2; i < parameters.length; i++) {
+                        final String role = parameters[i].toUpperCase();
                         if (stream(RoleEnum.values()).map(Enum::name)
                             .collect(Collectors.toList())
-                            .contains(parameters[i])) {
-                            user.addRole(RoleEnum.valueOf(parameters[i]));
+                            .contains(role)) {
+                            user.addRole(RoleEnum.valueOf(
+                                role));
                         }
                     }
                     break;
                 case "REMOVE":
                     for (int i = 2; i < parameters.length; i++) {
+                        final String role = parameters[i].toUpperCase();
                         if (stream(RoleEnum.values()).map(Enum::name)
                             .collect(Collectors.toList())
-                            .contains(parameters[i])) {
-                            user.removeRole(RoleEnum.valueOf(parameters[i]));
+                            .contains(role)) {
+                            user.removeRole(RoleEnum.valueOf(
+                                role));
 
                         }
                     }
@@ -69,7 +75,7 @@ public class ChangeUserListener implements Listener {
                 default:
                     return getErrorMessage();
                 }
-            scimitarUserEao.saveAndFlush(user);
+            user = scimitarUserEao.saveAndFlush(user);
             return String.format("New access for users %s: %s", parameters[0],
                 String.join(",",
                     user.getRoles().stream().map(role -> role.getRole().name())
