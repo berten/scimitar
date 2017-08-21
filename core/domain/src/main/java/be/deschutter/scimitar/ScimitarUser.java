@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 public class ScimitarUser {
@@ -70,7 +71,7 @@ public class ScimitarUser {
         this.phoneNumber = phoneNumber;
     }
 
-    public void addRole(final String role) {
+    public void addRole(final RoleEnum role) {
         if (roles == null)
             roles = new HashSet<>();
         roles.add(new Role(role));
@@ -84,8 +85,14 @@ public class ScimitarUser {
         return planetId;
     }
 
-    public void removeRole(final String role) {
+    public void removeRole(final RoleEnum role) {
         roles.stream().filter(role12 -> role12.getRole().equals(role))
             .findFirst().ifPresent(roles::remove);
+    }
+
+    public String getRolesAsString() {
+       return  String.join(",",
+           roles.stream().map(role -> role.getRole().name())
+                .sorted(String::compareTo).collect(Collectors.toList()));
     }
 }

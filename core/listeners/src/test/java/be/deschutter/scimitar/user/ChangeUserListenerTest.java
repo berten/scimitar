@@ -1,5 +1,6 @@
 package be.deschutter.scimitar.user;
 
+import be.deschutter.scimitar.RoleEnum;
 import be.deschutter.scimitar.ScimitarUser;
 import be.deschutter.scimitar.ScimitarUserEao;
 import org.junit.Before;
@@ -64,7 +65,7 @@ public class ChangeUserListenerTest {
 
     @Test
     public void getResult_Wrong_role() throws Exception {
-        user.addRole("HC");
+        user.addRole(RoleEnum.HC);
         assertThat(changeUserListener
             .getResult("Berten", "userToChange", "add", "hellofa"))
             .isEqualTo("New access for users userToChange: HC");
@@ -80,12 +81,12 @@ public class ChangeUserListenerTest {
             .forClass(ScimitarUser.class);
         verify(scimitarUserEao).saveAndFlush(userCaptor.capture());
         assertThat(userCaptor.getValue().getRoles()).extracting("role")
-            .contains("HC");
+            .contains(RoleEnum.HC);
     }
 
     @Test
     public void getResult_add_multiple() throws Exception {
-        user.addRole("MEMBER");
+        user.addRole(RoleEnum.MEMBER);
         assertThat(changeUserListener
             .getResult("Berten", "userToChange", "add", "HC", "ADMIN"))
             .isEqualTo("New access for users userToChange: ADMIN,HC,MEMBER");
@@ -94,12 +95,12 @@ public class ChangeUserListenerTest {
             .forClass(ScimitarUser.class);
         verify(scimitarUserEao).saveAndFlush(userCaptor.capture());
         assertThat(userCaptor.getValue().getRoles()).extracting("role")
-            .contains("HC", "ADMIN");
+            .contains(RoleEnum.HC, RoleEnum.ADMIN);
     }
 
     @Test
     public void getResult_remove() throws Exception {
-        user.addRole("HC");
+        user.addRole(RoleEnum.HC);
         assertThat(changeUserListener
             .getResult("Berten", "userToChange", "remove", "HC"))
             .isEqualTo("New access for users userToChange: ");
@@ -112,9 +113,9 @@ public class ChangeUserListenerTest {
 
     @Test
     public void getResult_removeMultiple() throws Exception {
-        user.addRole("HC");
-        user.addRole("ADMIN");
-        user.addRole("MEMBER");
+        user.addRole(RoleEnum.HC);
+        user.addRole(RoleEnum.ADMIN);
+        user.addRole(RoleEnum.MEMBER);
         assertThat(changeUserListener
             .getResult("Berten", "userToChange", "remove", "HC", "ADMIN"))
             .isEqualTo("New access for users userToChange: MEMBER");
@@ -123,7 +124,7 @@ public class ChangeUserListenerTest {
             .forClass(ScimitarUser.class);
         verify(scimitarUserEao).saveAndFlush(userCaptor.capture());
         assertThat(userCaptor.getValue().getRoles()).extracting("role")
-            .contains("MEMBER");
+            .contains(RoleEnum.MEMBER);
     }
 
 }

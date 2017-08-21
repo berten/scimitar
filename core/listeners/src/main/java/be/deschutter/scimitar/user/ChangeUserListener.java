@@ -1,7 +1,6 @@
 package be.deschutter.scimitar.user;
 
 import be.deschutter.scimitar.Listener;
-import be.deschutter.scimitar.Role;
 import be.deschutter.scimitar.RoleEnum;
 import be.deschutter.scimitar.ScimitarUser;
 import be.deschutter.scimitar.ScimitarUserEao;
@@ -15,11 +14,15 @@ import java.util.stream.Collectors;
 import static java.util.Arrays.stream;
 
 @Component
-@PreAuthorize("hasAnyAuthority('ROLE_MEMBER','ROLE_HC')")
+@PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_HC')")
 public class ChangeUserListener implements Listener {
 
+    private final ScimitarUserEao scimitarUserEao;
+
     @Autowired
-    private ScimitarUserEao scimitarUserEao;
+    public ChangeUserListener(final ScimitarUserEao scimitarUserEao) {
+        this.scimitarUserEao = scimitarUserEao;
+    }
 
     @Override
     public String getCommand() {
@@ -52,7 +55,7 @@ public class ChangeUserListener implements Listener {
                         if (stream(RoleEnum.values()).map(Enum::name)
                             .collect(Collectors.toList())
                             .contains(parameters[i])) {
-                            user.addRole(parameters[i]);
+                            user.addRole(RoleEnum.valueOf(parameters[i]));
                         }
                     }
                     break;
@@ -61,7 +64,7 @@ public class ChangeUserListener implements Listener {
                         if (stream(RoleEnum.values()).map(Enum::name)
                             .collect(Collectors.toList())
                             .contains(parameters[i])) {
-                            user.removeRole(parameters[i]);
+                            user.removeRole(RoleEnum.valueOf(parameters[i]));
 
                         }
                     }
@@ -71,8 +74,10 @@ public class ChangeUserListener implements Listener {
                 }
             scimitarUserEao.saveAndFlush(user);
             return String.format("New access for users %s: %s", parameters[0],
-                String.join(",", user.getRoles().stream().map(Role::getRole)
-                    .sorted(String::compareTo).collect(Collectors.toList())));
+                String.join(",",
+                    user.getRoles().stream().map(role -> role.getRole().name())
+                        .sorted(String::compareTo)
+                        .collect(Collectors.toList())));
         }
     }
 }

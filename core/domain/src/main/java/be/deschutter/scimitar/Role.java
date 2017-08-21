@@ -1,6 +1,8 @@
 package be.deschutter.scimitar;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
@@ -9,12 +11,13 @@ public class Role {
     @Id
     @GeneratedValue
     private Integer id;
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private RoleEnum role;
 
     private Role() {
     }
 
-    public Role(final String role) {
+    public Role(final RoleEnum role) {
         this.role = role;
     }
 
@@ -26,11 +29,11 @@ public class Role {
         this.id = id;
     }
 
-    public String getRole() {
+    public RoleEnum getRole() {
         return role;
     }
 
-    public void setRole(final String role) {
+    public void setRole(final RoleEnum role) {
         this.role = role;
     }
 }

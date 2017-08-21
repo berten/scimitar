@@ -1,6 +1,7 @@
 package be.deschutter.scimitar.config;
 
 import be.deschutter.scimitar.Role;
+import be.deschutter.scimitar.RoleEnum;
 import be.deschutter.scimitar.ScimitarUser;
 import be.deschutter.scimitar.ScimitarUserEao;
 import org.apache.catalina.filters.HttpHeaderSecurityFilter;
@@ -8,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.intercept.RunAsUserToken;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -31,12 +31,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Configuration
-@EnableGlobalMethodSecurity(prePostEnabled = true,proxyTargetClass = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
@@ -107,21 +108,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public AuthenticationEntryPoint restAuthenticationEntryPoint() {
-        return (httpServletRequest, httpServletResponse, e) -> {
-            httpServletResponse
-                .sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-        };
+        return (httpServletRequest, httpServletResponse, e) -> httpServletResponse
+            .sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
     }
 
     @PostConstruct
     public void initLoginUser() {
         final ScimitarUser s = new ScimitarUser();
         s.setUsername("Berten");
-        s.addRole("HC");
-        s.addRole("BC");
-        s.addRole("ADMIN");
-        s.addRole("MEMBER");
-        s.addRole("ANONYMOUS");
+        Arrays.stream(RoleEnum.values()).forEach(s::addRole);
         scimitarUserEao.saveAndFlush(s);
     }
 }
