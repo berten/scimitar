@@ -1,9 +1,10 @@
-package be.deschutter.scimitar.planetarion;
+package be.deschutter.scimitar.user;
 
 import be.deschutter.scimitar.ScimitarUser;
 import be.deschutter.scimitar.ScimitarUserEao;
 import be.deschutter.scimitar.planet.Planet;
 import be.deschutter.scimitar.planet.PlanetEao;
+import be.deschutter.scimitar.Listener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;

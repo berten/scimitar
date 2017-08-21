@@ -1,4 +1,4 @@
-package be.deschutter.scimitar.planetarion;
+package be.deschutter.scimitar;
 
 public interface Listener {
 

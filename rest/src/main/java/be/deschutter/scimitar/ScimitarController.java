@@ -1,7 +1,6 @@
 package be.deschutter.scimitar;
 
 import be.deschutter.scimitar.events.Event;
-import be.deschutter.scimitar.planetarion.Listener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

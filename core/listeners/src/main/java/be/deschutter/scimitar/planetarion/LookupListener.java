@@ -1,5 +1,6 @@
 package be.deschutter.scimitar.planetarion;
 
+import be.deschutter.scimitar.Listener;
 import be.deschutter.scimitar.galaxy.Galaxy;
 import be.deschutter.scimitar.galaxy.GalaxyEao;
 import be.deschutter.scimitar.planet.Planet;

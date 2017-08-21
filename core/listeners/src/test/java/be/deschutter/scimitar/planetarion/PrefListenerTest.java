@@ -4,6 +4,7 @@ import be.deschutter.scimitar.ScimitarUser;
 import be.deschutter.scimitar.ScimitarUserEao;
 import be.deschutter.scimitar.planet.Planet;
 import be.deschutter.scimitar.planet.PlanetEao;
+import be.deschutter.scimitar.user.PrefListener;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

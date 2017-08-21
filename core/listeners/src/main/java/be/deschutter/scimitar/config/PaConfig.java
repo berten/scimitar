@@ -1,4 +1,4 @@
-package be.deschutter.scimitar.planetarion;
+package be.deschutter.scimitar.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;

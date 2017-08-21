@@ -1,4 +1,4 @@
-package be.deschutter.scimitar.planetarion;
+package be.deschutter.scimitar;
 
 import java.util.Map;
 import java.util.NavigableMap;

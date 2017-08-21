@@ -1,15 +1,13 @@
-package be.deschutter.scimitar.planetarion;
+package be.deschutter.scimitar;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.StringJoiner;
-import java.util.stream.Collectors;
 
 @Component
 public class HelpListener implements Listener {

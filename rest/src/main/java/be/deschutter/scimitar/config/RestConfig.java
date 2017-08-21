@@ -1,6 +1,5 @@
 package be.deschutter.scimitar.config;
 
-import be.deschutter.scimitar.planetarion.PaConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;

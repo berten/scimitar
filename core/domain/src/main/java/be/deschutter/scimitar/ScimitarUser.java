@@ -83,4 +83,9 @@ public class ScimitarUser {
     public String getPlanetId() {
         return planetId;
     }
+
+    public void removeRole(final String role) {
+        roles.stream().filter(role12 -> role12.getRole().equals(role))
+            .findFirst().ifPresent(roles::remove);
+    }
 }

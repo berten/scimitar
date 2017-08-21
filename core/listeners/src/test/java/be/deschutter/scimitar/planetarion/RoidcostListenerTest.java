@@ -1,5 +1,7 @@
 package be.deschutter.scimitar.planetarion;
 
+import be.deschutter.scimitar.config.Government;
+import be.deschutter.scimitar.config.PaConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

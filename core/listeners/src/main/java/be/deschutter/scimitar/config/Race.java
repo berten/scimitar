@@ -1,4 +1,4 @@
-package be.deschutter.scimitar.planetarion;
+package be.deschutter.scimitar.config;
 
 public class Race {
 

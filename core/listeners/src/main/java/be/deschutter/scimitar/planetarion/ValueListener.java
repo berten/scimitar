@@ -1,5 +1,7 @@
 package be.deschutter.scimitar.planetarion;
 
+import be.deschutter.scimitar.Formatter;
+import be.deschutter.scimitar.Listener;
 import be.deschutter.scimitar.planet.Planet;
 import be.deschutter.scimitar.planet.PlanetEao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +39,8 @@ public class ValueListener implements Listener {
                     return "Planet " + x + ":" + y + ":" + z
                             + " does not exist";
                 String valueString = p.stream().sorted(
-                    Comparator.comparingLong(Planet::getTick)).map(planet -> String.format(" pt%d %s (%s)", planet.getTick(), Formatter.format(planet.getValue()), Formatter.format(planet.getValueGrowth()))).collect(Collectors.joining("|"));
+                    Comparator.comparingLong(Planet::getTick)).map(planet -> String.format(" pt%d %s (%s)", planet.getTick(), Formatter
+                    .format(planet.getValue()), Formatter.format(planet.getValueGrowth()))).collect(Collectors.joining("|"));
 
                 return String.format("Value in the last %d ticks on %d:%d:%d%s", p.size(), x, y, z, valueString);
             } catch (NumberFormatException e) {
