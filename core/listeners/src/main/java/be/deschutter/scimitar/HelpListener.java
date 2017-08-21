@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.StringJoiner;
 
 @Component
@@ -35,15 +36,17 @@ public class HelpListener implements Listener {
 
         if (parameters == null || parameters.length == 0) {
             StringJoiner joiner = new StringJoiner(", ");
-            listeners.forEach(listener -> {
-                try {
-                    String command = listener.getCommand();
-                    joiner.add(command);
-                } catch (AccessDeniedException exception) {
-                    // Do Nothing. This is one of the rare cases where we don't want to handle an exception.
-                    // This will result in the command not being in the !help list if you don't have access to it
-                }
-            });
+            listeners.stream()
+                .sorted(Comparator.comparing(Listener::getCommand))
+                .forEach(listener -> {
+                    try {
+                        String command = listener.getCommand();
+                        joiner.add(command);
+                    } catch (AccessDeniedException exception) {
+                        // Do Nothing. This is one of the rare cases where we don't want to handle an exception.
+                        // This will result in the command not being in the !help list if you don't have access to it
+                    }
+                });
             return "List of commands: " + joiner.toString();
         } else if (parameters.length == 1) {
             final String command = parameters[0];

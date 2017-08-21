@@ -27,8 +27,8 @@ public class HelpListenerTest {
     @Before
     public void setUp() throws Exception {
         final Map<String, Listener> listeners = new HashMap<>();
-        listeners.put("one", listener("one", "1 2"));
         listeners.put("two", listener("two", "3 4"));
+        listeners.put("one", listener("one", "1 2"));
 
         when(applicationContext.getBeansOfType(Listener.class)).thenReturn(
             listeners);
