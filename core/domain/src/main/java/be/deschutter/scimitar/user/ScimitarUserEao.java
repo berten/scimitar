@@ -1,4 +1,4 @@
-package be.deschutter.scimitar;
+package be.deschutter.scimitar.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

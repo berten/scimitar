@@ -1,4 +1,4 @@
-package be.deschutter.scimitar;
+package be.deschutter.scimitar.user;
 
 import javax.persistence.Entity;
 import javax.persistence.EnumType;

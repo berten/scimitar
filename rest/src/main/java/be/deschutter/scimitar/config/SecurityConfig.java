@@ -1,9 +1,9 @@
 package be.deschutter.scimitar.config;
 
-import be.deschutter.scimitar.Role;
-import be.deschutter.scimitar.RoleEnum;
-import be.deschutter.scimitar.ScimitarUser;
-import be.deschutter.scimitar.ScimitarUserEao;
+import be.deschutter.scimitar.user.Role;
+import be.deschutter.scimitar.user.RoleEnum;
+import be.deschutter.scimitar.user.ScimitarUser;
+import be.deschutter.scimitar.user.ScimitarUserEao;
 import org.apache.catalina.filters.HttpHeaderSecurityFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

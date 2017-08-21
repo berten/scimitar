@@ -1,4 +1,4 @@
-package be.deschutter.scimitar;
+package be.deschutter.scimitar.user;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;

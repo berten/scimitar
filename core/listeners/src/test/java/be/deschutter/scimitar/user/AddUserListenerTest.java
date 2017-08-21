@@ -1,8 +1,5 @@
 package be.deschutter.scimitar.user;
 
-import be.deschutter.scimitar.RoleEnum;
-import be.deschutter.scimitar.ScimitarUser;
-import be.deschutter.scimitar.ScimitarUserEao;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,7 +1,5 @@
 package be.deschutter.scimitar.user;
 
-import be.deschutter.scimitar.ScimitarUser;
-import be.deschutter.scimitar.ScimitarUserEao;
 import be.deschutter.scimitar.planet.Planet;
 import be.deschutter.scimitar.planet.PlanetEao;
 import be.deschutter.scimitar.Listener;
