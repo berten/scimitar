@@ -29,7 +29,6 @@ public class ChangeUserListener implements Listener {
 
     @Override
     public String getPattern() {
-        StringJoiner joiner = new StringJoiner(", ");
 
         return "nickname add|remove " + String.join("|",
             stream(RoleEnum.values())

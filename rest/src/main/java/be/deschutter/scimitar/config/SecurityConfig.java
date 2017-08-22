@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Enumeration;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -58,17 +58,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 final ServletResponse servletResponse,
                 final FilterChain filterChain)
                 throws IOException, ServletException {
-
-                final Enumeration<String> headerNames = ((HttpServletRequest) servletRequest)
-                    .getHeaderNames();
-
-                if (headerNames != null) {
-                    while (headerNames.hasMoreElements()) {
-                        System.out.println(
-                            "Header: " + ((HttpServletRequest) servletRequest)
-                                .getHeader(headerNames.nextElement()));
-                    }
-                }
 
                 final String loggedInUsername = ((HttpServletRequest) servletRequest)
                     .getHeader("loggedInUsername");
@@ -97,10 +86,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             final ScimitarUser user = scimitarUserEao
                 .findByUsernameIgnoreCase(principal);
 
-            return new RunAsUserToken(principal, user, "",
-                user.getRoles().stream().map(
+            final List<GrantedAuthority> authorities = user.getRoles().stream()
+                .map(
                     (Function<Role, GrantedAuthority>) role -> new SimpleGrantedAuthority(
-                        "ROLE_" + role.getRole())).collect(Collectors.toList()),
+                        "ROLE_" + role.getRole())).collect(Collectors.toList());
+            authorities.add((GrantedAuthority) () -> "ROLE_ANONYMOUS");
+            return new RunAsUserToken(principal, user, "", authorities,
                 RunAsUserToken.class);
 
         };
@@ -114,9 +105,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @PostConstruct
     public void initLoginUser() {
+        /*
+        Basic user with all roles except the anonymous role, which should be added to everyone.
+         */
         final ScimitarUser s = new ScimitarUser();
         s.setUsername("Berten");
-        Arrays.stream(RoleEnum.values()).forEach(s::addRole);
+        s.setPhoneNumber("+32479896167");
+        Arrays.stream(RoleEnum.values())
+            .filter(roleEnum -> roleEnum != RoleEnum.ANONYMOUS)
+            .forEach(s::addRole);
         scimitarUserEao.saveAndFlush(s);
     }
 }
