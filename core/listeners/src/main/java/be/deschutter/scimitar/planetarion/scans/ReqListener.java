@@ -59,9 +59,8 @@ public class ReqListener implements Listener {
         if (parameters.length == 1) {
             if (parameters[0].toUpperCase().equals("LIST")) {
                 return listScanRequestsWithLessDistsThen(currentTick, 300);
-
             } else if (parameters[0].toUpperCase().equals("LINKS")) {
-
+                return listScanLinksWithLessDistsThen(currentTick, 300);
             } else {
                 return getErrorMessage();
             }
@@ -77,6 +76,12 @@ public class ReqListener implements Listener {
                 }
 
             } else if (parameters[0].toUpperCase().equals("LINKS")) {
+                try {
+                    int amps = Integer.parseInt(parameters[1]);
+                    return listScanLinksWithLessDistsThen(currentTick, amps);
+                } catch (NumberFormatException e) {
+                    return getErrorMessage();
+                }
 
             } else {
                 return getErrorMessage();
@@ -147,15 +152,58 @@ public class ReqListener implements Listener {
                     .add(scanRequest);
         });
 
-        return reqs.entrySet().stream().sorted(
-            Comparator.comparing(o -> o.getKey().getCoordCalculated())).map(planetSetEntry -> String
-            .format("[%d:%d:%d (%d) %s]", planetSetEntry.getKey().getX(),
-                planetSetEntry.getKey().getY(), planetSetEntry.getKey().getZ(),
-                planetSetEntry.getKey().getDists(),
-                planetSetEntry.getValue().stream().map(
-                    scanRequest -> scanRequest.getId() +":" +scanRequest.getScanType().name() )
-                    .collect(Collectors.joining("|"))))
+        return reqs.entrySet().stream()
+            .sorted(Comparator.comparing(o -> o.getKey().getCoordCalculated()))
+            .map(planetSetEntry -> String
+                .format("[%d:%d:%d (%d) %s]", planetSetEntry.getKey().getX(),
+                    planetSetEntry.getKey().getY(),
+                    planetSetEntry.getKey().getZ(),
+                    planetSetEntry.getKey().getDists(),
+                    planetSetEntry.getValue().stream().sorted(Comparator
+                        .comparingInt(o2 -> o2.getScanType().ordinal())).map(
+                        scanRequest -> scanRequest.getId() + ":" + scanRequest
+                            .getScanType().name())
+                        .collect(Collectors.joining("|"))))
             .collect(Collectors.joining(" "));
     }
 
+    private String listScanLinksWithLessDistsThen(final TickerInfo currentTick,
+        int amps) {
+        final List<ScanRequest> scanRequests = scanRequestEao
+            .findByScanIdIsNull();
+
+        return scanRequests.stream().map(scanRequest -> {
+            final Planet planet = planetEao
+                .findByPlanetIdAndTick(scanRequest.getPlanetId(),
+                    currentTick.getTick());
+            return new ScanRequestBuffed(scanRequest, planet);
+        }).filter(scanRequestBuffed -> scanRequestBuffed.getPlanet().getDists()
+            < amps).map(scanRequest -> String.format(
+            "[%d (%d) : https://game.planetarion.com/waves.pl?id=%d&x=%d&y=%d&z=%d]",
+            scanRequest.getScanRequest().getId(),
+            scanRequest.getPlanet().getDists(),
+            scanRequest.getScanRequest().getScanType().ordinal(),
+            scanRequest.getPlanet().getX(), scanRequest.getPlanet().getY(),
+            scanRequest.getPlanet().getZ())).collect(Collectors.joining(" "));
+    }
+
+    private class ScanRequestBuffed {
+        private ScanRequest scanRequest;
+        private Planet planet;
+
+        public ScanRequestBuffed(final ScanRequest scanRequest,
+            final Planet planet) {
+
+            this.scanRequest = scanRequest;
+            this.planet = planet;
+        }
+
+        public ScanRequest getScanRequest() {
+            return scanRequest;
+        }
+
+        public Planet getPlanet() {
+            return planet;
+        }
+    }
 }

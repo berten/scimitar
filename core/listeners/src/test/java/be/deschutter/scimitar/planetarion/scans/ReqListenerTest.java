@@ -142,7 +142,26 @@ public class ReqListenerTest {
         when(scanRequestEao.findByScanIdIsNull())
             .thenReturn(Arrays.asList(sr1, sr2, sr3, sr5));
         assertThat(reqListener.getResult("username", "list", "13"))
-            .isEqualTo("[1:2:3 (0) 2:D|1:P] [7:8:9 (3) 5:J]");
+            .isEqualTo("[1:2:3 (0) 1:P|2:D] [7:8:9 (3) 5:J]");
+    }
+
+
+    @Test
+    public void getResult_Links_NoAmps() throws Exception {
+
+        when(scanRequestEao.findByScanIdIsNull())
+            .thenReturn(Arrays.asList(sr1, sr2, sr3, sr5));
+        assertThat(reqListener.getResult("username", "links"))
+            .isEqualTo("[1 (0) : https://game.planetarion.com/waves.pl?id=0&x=1&y=2&z=3] [2 (0) : https://game.planetarion.com/waves.pl?id=1&x=1&y=2&z=3] [3 (20) : https://game.planetarion.com/waves.pl?id=6&x=4&y=5&z=6] [5 (3) : https://game.planetarion.com/waves.pl?id=5&x=7&y=8&z=9]");
+    }
+
+    @Test
+    public void getResult_Links_WithAmps() throws Exception {
+
+        when(scanRequestEao.findByScanIdIsNull())
+            .thenReturn(Arrays.asList(sr1, sr2, sr3, sr5));
+        assertThat(reqListener.getResult("username", "links", "13"))
+            .isEqualTo("[1 (0) : https://game.planetarion.com/waves.pl?id=0&x=1&y=2&z=3] [2 (0) : https://game.planetarion.com/waves.pl?id=1&x=1&y=2&z=3] [5 (3) : https://game.planetarion.com/waves.pl?id=5&x=7&y=8&z=9]");
     }
 
     @Test
