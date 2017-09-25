@@ -69,6 +69,7 @@ public class ReqListenerTest {
         p1.setY(2);
         p1.setZ(3);
         when(planetEao.findByPlanetIdAndTick("planetid1", 123)).thenReturn(p1);
+        when(planetEao.findByXAndYAndZAndTick(1, 2, 3, 123)).thenReturn(p1);
 
         p2 = new Planet();
         p2.setDists(20);
@@ -128,6 +129,17 @@ public class ReqListenerTest {
     }
 
     @Test
+    public void blocks() throws Exception {
+        assertThat(
+            reqListener.getResult("username", "1", "2", "3", "blocks", "13"))
+            .isEqualTo("Updated intelligence on 1:2:3 to 13 dists");
+        final ArgumentCaptor<Planet> captor = ArgumentCaptor
+            .forClass(Planet.class);
+        verify(planetEao).save(captor.capture());
+        assertThat(captor.getValue().getDists()).isEqualTo(13);
+    }
+
+    @Test
     public void getResult_List_NoAmps() throws Exception {
 
         when(scanRequestEao.findByScanIdIsNull())
@@ -145,14 +157,13 @@ public class ReqListenerTest {
             .isEqualTo("[1:2:3 (0) 1:P|2:D] [7:8:9 (3) 5:J]");
     }
 
-
     @Test
     public void getResult_Links_NoAmps() throws Exception {
 
         when(scanRequestEao.findByScanIdIsNull())
             .thenReturn(Arrays.asList(sr1, sr2, sr3, sr5));
-        assertThat(reqListener.getResult("username", "links"))
-            .isEqualTo("[1 (0) : https://game.planetarion.com/waves.pl?id=0&x=1&y=2&z=3] [2 (0) : https://game.planetarion.com/waves.pl?id=1&x=1&y=2&z=3] [3 (20) : https://game.planetarion.com/waves.pl?id=6&x=4&y=5&z=6] [5 (3) : https://game.planetarion.com/waves.pl?id=5&x=7&y=8&z=9]");
+        assertThat(reqListener.getResult("username", "links")).isEqualTo(
+            "[1 (0) : https://game.planetarion.com/waves.pl?id=0&x=1&y=2&z=3] [2 (0) : https://game.planetarion.com/waves.pl?id=1&x=1&y=2&z=3] [3 (20) : https://game.planetarion.com/waves.pl?id=6&x=4&y=5&z=6] [5 (3) : https://game.planetarion.com/waves.pl?id=5&x=7&y=8&z=9]");
     }
 
     @Test
@@ -160,8 +171,36 @@ public class ReqListenerTest {
 
         when(scanRequestEao.findByScanIdIsNull())
             .thenReturn(Arrays.asList(sr1, sr2, sr3, sr5));
-        assertThat(reqListener.getResult("username", "links", "13"))
-            .isEqualTo("[1 (0) : https://game.planetarion.com/waves.pl?id=0&x=1&y=2&z=3] [2 (0) : https://game.planetarion.com/waves.pl?id=1&x=1&y=2&z=3] [5 (3) : https://game.planetarion.com/waves.pl?id=5&x=7&y=8&z=9]");
+        assertThat(reqListener.getResult("username", "links", "13")).isEqualTo(
+            "[1 (0) : https://game.planetarion.com/waves.pl?id=0&x=1&y=2&z=3] [2 (0) : https://game.planetarion.com/waves.pl?id=1&x=1&y=2&z=3] [5 (3) : https://game.planetarion.com/waves.pl?id=5&x=7&y=8&z=9]");
+    }
+
+    @Test
+    public void cancel() throws Exception {
+        assertThat(reqListener.getResult("username", "cancel", "13"))
+            .isEqualTo("Scanrequest 13 successfully cancelled");
+        verify(scanRequestEao).delete(13);
+    }
+
+    @Test
+    public void cancel_not_an_id() throws Exception {
+        assertThat(reqListener.getResult("username", "cancel", "xx")).isEqualTo(
+            "Error: use following pattern for command req: x y z P|D|U|N|I|J|A [dists] | x y z blocks <amps> | cancel <id> | list [amps] | links [amps]");
+    }
+
+    @Test
+    public void getResult_1Parameter_NotLinkLIst() throws Exception {
+
+        assertThat(reqListener.getResult("username", "sports")).isEqualTo(
+            "Error: use following pattern for command req: x y z P|D|U|N|I|J|A [dists] | x y z blocks <amps> | cancel <id> | list [amps] | links [amps]");
+    }
+
+    @Test
+    public void getResult_2Parameter_NotLinkLIstCancel() throws Exception {
+
+        assertThat(reqListener.getResult("username", "sports", "blaat"))
+            .isEqualTo(
+                "Error: use following pattern for command req: x y z P|D|U|N|I|J|A [dists] | x y z blocks <amps> | cancel <id> | list [amps] | links [amps]");
     }
 
     @Test

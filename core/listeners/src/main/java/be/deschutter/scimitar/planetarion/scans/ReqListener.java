@@ -66,6 +66,14 @@ public class ReqListener implements Listener {
             }
         } else if (parameters.length == 2) {
             if (parameters[0].toUpperCase().equals("CANCEL")) {
+                try {
+                    int id = Integer.parseInt(parameters[1]);
+                    scanRequestEao.delete(id);
+                    return String.format("Scanrequest %d successfully cancelled",id);
+                } catch (NumberFormatException e) {
+                    return getErrorMessage();
+                }
+
 
             } else if (parameters[0].toUpperCase().equals("LIST")) {
                 try {
@@ -93,6 +101,13 @@ public class ReqListener implements Listener {
                 int z = Integer.parseInt(parameters[2]);
 
                 int amps = Integer.parseInt(parameters[4]);
+                if(parameters[3].toUpperCase().equals("BLOCKS")) {
+                    final Planet planet = planetEao
+                        .findByXAndYAndZAndTick(x, y, z, currentTick.getTick());
+                    planet.setDists(amps);
+                    planetEao.save(planet);
+                    return String.format("Updated intelligence on %d:%d:%d to %d dists",x,y,z,amps);
+                }
             } catch (NumberFormatException e) {
                 return getErrorMessage();
             }
@@ -191,18 +206,17 @@ public class ReqListener implements Listener {
         private ScanRequest scanRequest;
         private Planet planet;
 
-        public ScanRequestBuffed(final ScanRequest scanRequest,
-            final Planet planet) {
+        ScanRequestBuffed(final ScanRequest scanRequest, final Planet planet) {
 
             this.scanRequest = scanRequest;
             this.planet = planet;
         }
 
-        public ScanRequest getScanRequest() {
+        ScanRequest getScanRequest() {
             return scanRequest;
         }
 
-        public Planet getPlanet() {
+        Planet getPlanet() {
             return planet;
         }
     }
