@@ -14,12 +14,14 @@ public class IRCController {
     private MyIrcBot myIrcBot;
 
     @RequestMapping("/admin/irc/status")
-    public @ResponseBody Boolean getStatus() {
+    public @ResponseBody
+    Boolean getStatus() {
         return myIrcBot.isConnected();
     }
 
     @RequestMapping("/admin/irc/start")
-    public @ResponseBody Boolean start() {
+    public @ResponseBody
+    Boolean start() {
         try {
             myIrcBot.startBot();
         } catch (IOException | IrcException e) {
@@ -27,4 +29,5 @@ public class IRCController {
         }
         return true;
     }
+
 }

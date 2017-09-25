@@ -70,7 +70,7 @@ public class PlanetConfig {
                                 jobExecution.getJobParameters().getLong("tick"));
 
                         jdbcTemplate.execute(
-                                "INSERT into planet (id,tick,planet_name,race,ruler_name,score,size,special,value,x,xp,y,z,score_rank,value_rank,size_rank,xp_rank) SELECT id,tick,planet_name,race,ruler_name,score,size,special,value,x,xp,y,z,score_rank,value_rank,size_rank,xp_rank from ("
+                                "INSERT into planet (id,tick,planet_name,race,ruler_name,score,size,special,value,x,xp,y,z,score_rank,value_rank,size_rank,xp_rank,amps,dists) SELECT id,tick,planet_name,race,ruler_name,score,size,special,value,x,xp,y,z,score_rank,value_rank,size_rank,xp_rank from ("
                                         + "  SELECT" + "    *," + "    rank()"
                                         + "    OVER (ORDER BY score DESC ) as score_rank,"
                                         + "    rank()"
@@ -78,7 +78,7 @@ public class PlanetConfig {
                                         + "    rank()"
                                         + "    OVER (ORDER BY size DESC )as size_rank,"
                                         + "    rank()"
-                                        + "    OVER (ORDER BY xp DESC )as xp_rank"
+                                        + "    OVER (ORDER BY xp DESC )as xp_rank,0,0"
                                         + "  FROM planet_staging" + ") as planet_rank");
 
                         //5,29,53
@@ -96,7 +96,8 @@ public class PlanetConfig {
                                         "value_growth=planet.value -(SELECT p2.value from planet p2 where p2.id=planet.id and tick=" + (tick.getTick() -1) + ")," +
                                         "xp_growth=planet.xp -(SELECT p2.xp from planet p2 where p2.id=planet.id and tick=" + (tick.getTick() -1) + ") where tick=" + tick.getTick());
 
-
+                        jdbcTemplate.execute("update planet set amps= (SELECT p2.amps from planet p2 where p2.id=planet.id and tick=" + tickToCompareWith + ") where tick=" + tick.getTick());
+                        jdbcTemplate.execute("update planet set dists= (SELECT p2.dists from planet p2 where p2.id=planet.id and tick=" + tickToCompareWith + ") where tick=" + tick.getTick());
 
                         tick.setPlanets(planetEao.countByTick(tick.getTick()));
                         tick.setProcessingTimePlanets(

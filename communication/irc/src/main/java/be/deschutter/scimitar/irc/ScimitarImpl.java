@@ -38,6 +38,12 @@ public class ScimitarImpl extends ListenerAdapter<PircBotX>
     public void onMessage(MessageEvent messageEvent) {
         Event event = eventFactory.makeEvent(messageEvent);
 
+        if (event.getCommand().equals("reg")) {
+            event.setReply("reg should be used on slack");
+            reply(event, messageEvent.getBot());
+            return;
+        }
+
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 
 @Component
-@PreAuthorize("hasAuthority('ROLE_MEMBER')")
+
 public class PrefListener implements Listener {
     private final ScimitarUserEao scimitarUserEao;
     private final PlanetEao planetEao;
@@ -33,7 +33,14 @@ public class PrefListener implements Listener {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('ROLE_MEMBER')")
+    public boolean hasAccess() {
+        return true;
+    }
+
+    @Override
     @Transactional
+    @PreAuthorize("hasAuthority('ROLE_MEMBER')")
     public String getResult(final String username, final String... parameters) {
         final ScimitarUser user = scimitarUserEao
             .findByUsernameIgnoreCase(username);

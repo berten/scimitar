@@ -15,13 +15,14 @@ public class ScimitarUser {
     @Id
     @GeneratedValue
     private Integer id;
-    @OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<Role> roles = new HashSet<>();
     private String username;
     private String password;
     private String email;
     private String phoneNumber;
     private String planetId;
+    private String slackUsername;
 
     public Integer getId() {
         return id;
@@ -94,5 +95,13 @@ public class ScimitarUser {
        return  String.join(",",
            roles.stream().map(role -> role.getRole().name())
                 .sorted(String::compareTo).collect(Collectors.toList()));
+    }
+
+    public void setSlackUsername(final String slackUsername) {
+        this.slackUsername = slackUsername;
+    }
+
+    public String getSlackUsername() {
+        return slackUsername;
     }
 }

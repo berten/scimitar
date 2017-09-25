@@ -13,4 +13,8 @@ public interface Listener {
         return "Error: use following pattern for command " + getCommand() + ": "
                 + getPattern();
     }
+
+    default boolean hasAccess() {
+        return true;
+    }
 }

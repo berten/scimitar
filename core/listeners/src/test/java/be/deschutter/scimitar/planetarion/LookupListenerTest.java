@@ -1,5 +1,7 @@
 package be.deschutter.scimitar.planetarion;
 
+import be.deschutter.scimitar.TickerInfo;
+import be.deschutter.scimitar.TickerInfoEao;
 import be.deschutter.scimitar.galaxy.Galaxy;
 import be.deschutter.scimitar.galaxy.GalaxyEao;
 import be.deschutter.scimitar.planet.Planet;
@@ -23,12 +25,15 @@ public class LookupListenerTest {
     private GalaxyEao galaxyEao;
     @Mock
     private PlanetEao planetEao;
-    private Planet planet;
-    private Galaxy galaxy;
+    @Mock
+    private TickerInfoEao tickerInfoEao;
 
     @Before
     public void setUp() throws Exception {
-        planet = new Planet();
+
+        when(tickerInfoEao.findFirstByOrderByTickDesc()).thenReturn(new TickerInfo(123));
+
+        final Planet planet = new Planet();
         planet.setX(3);
         planet.setY(6);
         planet.setZ(2);
@@ -43,10 +48,10 @@ public class LookupListenerTest {
         planet.setValueRank(2);
         planet.setXpRank(3);
         planet.setSizeRank(4);
-        when(planetEao.findFirstByXAndYAndZOrderByTickDesc(3, 6, 2))
+        when(planetEao.findByXAndYAndZAndTick(3, 6, 2,123L))
             .thenReturn(planet);
 
-        galaxy = new Galaxy();
+        final Galaxy galaxy = new Galaxy();
         galaxy.setX(3);
         galaxy.setY(6);
         galaxy.setGalaxyName("galaxyname");

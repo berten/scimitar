@@ -4,6 +4,7 @@ import be.deschutter.scimitar.events.Event;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -24,10 +25,14 @@ public class ScimitarController {
         @RequestBody
             Event event) {
         for (Listener listener : listeners) {
-            if (listener.getCommand().equals(event.getCommand())) {
-                event.setReply(listener.getResult(event.getLoggedInUsername(),
-                    event.getParameters()));
-                return new ResponseEntity<>(event, HttpStatus.OK);
+            try {
+                if (listener.getCommand().equals(event.getCommand())) {
+                    event.setReply(listener
+                        .getResult(event.getLoggedInUsername(), event.getParameters()));
+                    return new ResponseEntity<>(event, HttpStatus.OK);
+                }
+            } catch (AccessDeniedException e) {
+                event.setReply("Access Denied");
             }
         }
         return new ResponseEntity<>(event, HttpStatus.NO_CONTENT);

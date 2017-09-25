@@ -6,7 +6,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
 @Component
-@PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_HC')")
+
 public class ShowUserListener implements Listener {
     private final ScimitarUserEao scimitarUserEao;
 
@@ -26,6 +26,14 @@ public class ShowUserListener implements Listener {
     }
 
     @Override
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_HC')")
+    public boolean hasAccess() {
+        return true;
+    }
+
+
+    @Override
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_HC')")
     public String getResult(final String username, final String... parameters) {
         if (null == parameters || parameters.length == 0) {
             final ScimitarUser u = scimitarUserEao

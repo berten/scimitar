@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 
 @Component
-@PreAuthorize("hasAuthority('ROLE_MEMBER')")
+
 public class SmsListener implements Listener {
 
     private final ScimitarUserEao scimitarUserEao;
@@ -34,6 +34,13 @@ public class SmsListener implements Listener {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('ROLE_MEMBER')")
+    public boolean hasAccess() {
+        return true;
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('ROLE_MEMBER')")
     public String getResult(final String username, final String... parameters) {
         if (parameters.length < 2)
             return getErrorMessage();

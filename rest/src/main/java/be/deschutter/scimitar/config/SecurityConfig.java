@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -48,7 +49,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable().httpBasic()
             .authenticationEntryPoint(restAuthenticationEntryPoint()).and()
             .addFilterBefore(filter(), BasicAuthenticationFilter.class)
-            .authorizeRequests().anyRequest().hasAnyAuthority("ROLE_ANONYMOUS");
+            .authorizeRequests().anyRequest().hasAuthority(RoleEnum.ANONYMOUS.name());
     }
 
     private Filter filter() {
@@ -83,16 +84,28 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .getPrincipal()).isEmpty())
                 return null;
             final String principal = (String) authentication.getPrincipal();
-            final ScimitarUser user = scimitarUserEao
+             ScimitarUser user = scimitarUserEao
                 .findByUsernameIgnoreCase(principal);
 
-            final List<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(
+            if(user == null) {
+                user = scimitarUserEao.findBySlackUsernameIgnoreCase(principal);
+            }
+
+            if(user != null) {
+                final List<GrantedAuthority> authorities = user.getRoles().stream().map(
                     (Function<Role, GrantedAuthority>) role -> new SimpleGrantedAuthority(
                         "ROLE_" + role.getRole())).collect(Collectors.toList());
-            authorities.add((GrantedAuthority) () -> "ROLE_ANONYMOUS");
-            return new RunAsUserToken(principal, user, "", authorities,
-                RunAsUserToken.class);
+                authorities.add(new SimpleGrantedAuthority(RoleEnum.ANONYMOUS.name()));
+                return new RunAsUserToken(principal, user, "", authorities,
+                    RunAsUserToken.class);
+            } else {
+
+                final List<GrantedAuthority> authorities = new ArrayList<>();
+                authorities.add(new SimpleGrantedAuthority(RoleEnum.ANONYMOUS.name()));
+                return new RunAsUserToken(principal, principal, "",authorities,
+                    RunAsUserToken.class);
+            }
+
 
         };
     }
@@ -111,8 +124,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         final ScimitarUser s = new ScimitarUser();
         s.setUsername("Berten");
         s.setPhoneNumber("+32479896167");
+        //s.setSlackUsername("U0DPGLRK7");
         Arrays.stream(RoleEnum.values())
             .filter(roleEnum -> roleEnum != RoleEnum.ANONYMOUS)
+            //.filter(roleEnum -> roleEnum != RoleEnum.ADMIN)
             .forEach(s::addRole);
         scimitarUserEao.saveAndFlush(s);
     }

@@ -46,6 +46,9 @@ public class Planet {
     @Column(nullable = true)
     private int xpGrowth = 0;
 
+    private int amps = 0;
+    private int dists = 0;
+
     public int getSizeRank() {
         return sizeRank;
     }
@@ -244,5 +247,25 @@ public class Planet {
 
     public void setXpGrowth(int xpGrowth) {
         this.xpGrowth = xpGrowth;
+    }
+
+    public int getAmps() {
+        return amps;
+    }
+
+    public void setAmps(final int amps) {
+        this.amps = amps;
+    }
+
+    public int getDists() {
+        return dists;
+    }
+
+    public void setDists(final int dists) {
+        this.dists = dists;
+    }
+
+    public Long getCoordCalculated() {
+        return (x * 1000000000L) + (y * 1000000) + (z * 1000);
     }
 }

@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.StringJoiner;
+import java.util.function.Consumer;
 
 @Component
 public class HelpListener implements Listener {
@@ -40,11 +41,12 @@ public class HelpListener implements Listener {
                 .sorted(Comparator.comparing(Listener::getCommand))
                 .forEach(listener -> {
                     try {
-                        String command = listener.getCommand();
-                        joiner.add(command);
+                        if(listener.hasAccess()) {
+                            String command = listener.getCommand();
+                            joiner.add(command);
+                        }
                     } catch (AccessDeniedException exception) {
-                        // Do Nothing. This is one of the rare cases where we don't want to handle an exception.
-                        // This will result in the command not being in the !help list if you don't have access to it
+                        //
                     }
                 });
             return "List of commands: " + joiner.toString();

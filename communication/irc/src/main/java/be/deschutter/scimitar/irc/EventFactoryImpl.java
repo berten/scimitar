@@ -20,13 +20,13 @@ public class EventFactoryImpl implements EventFactory {
         event.setCurrentUsername(messageEvent.getUser().getNick());
 
         Pattern pattern = Pattern.compile("(.*)\\.users\\.netgamers\\.org");
-        Pattern commandPatern = Pattern.compile("(^[\\.!\\-])([a-zA-Z]*)\\s*(.*)");
 
 
         Matcher m = pattern.matcher(messageEvent.getUser().getHostmask());
         if (m.matches()) {
             event.setLoggedInUsername(m.replaceAll("$1"));
 
+            Pattern commandPatern = Pattern.compile("(^[\\.!\\-])([a-zA-Z]*)\\s*(.*)");
             Matcher matcher = commandPatern.matcher(messageEvent.getMessage());
             if (matcher.matches()) {
                 event.setReturnType(ReturnType.findByPrefix(matcher.group(1)));

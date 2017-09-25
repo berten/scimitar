@@ -10,7 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
 @Component
-@PreAuthorize("hasAuthority('ROLE_MEMBER')")
+
 public class CallListener implements Listener {
     private final ScimitarUserEao scimitarUserEao;
 
@@ -42,6 +42,13 @@ public class CallListener implements Listener {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('ROLE_MEMBER')")
+    public boolean hasAccess() {
+        return true;
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('ROLE_MEMBER')")
     public String getResult(final String username, final String... parameters) {
         if (parameters.length == 1) {
             final ScimitarUser user = scimitarUserEao

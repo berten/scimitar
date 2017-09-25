@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 public interface ScimitarUserEao extends JpaRepository<ScimitarUser,Integer> {
 
     ScimitarUser findByUsernameIgnoreCase(String username);
+
+    ScimitarUser findBySlackUsernameIgnoreCase(String slackUsername);
 }

@@ -12,7 +12,7 @@ import java.util.stream.IntStream;
 import static java.util.Arrays.stream;
 
 @Component
-@PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_HC')")
+
 public class AddUserListener implements Listener {
     private final ScimitarUserEao scimitarUserEao;
 
@@ -35,7 +35,14 @@ public class AddUserListener implements Listener {
     }
 
     @Override
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    public boolean hasAccess() {
+        return true;
+    }
+
+    @Override
     @Transactional
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     public String getResult(final String username, final String... parameters) {
         if (parameters.length == 0)
 

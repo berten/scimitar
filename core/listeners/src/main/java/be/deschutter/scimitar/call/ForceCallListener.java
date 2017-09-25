@@ -8,7 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
 @Component
-@PreAuthorize("hasAnyAuthority('ROLE_HC','ROLE_BC','ROLE_ADMIN')")
+
 public class ForceCallListener implements Listener {
 
     private final TaskExecutor taskExecutor;
@@ -37,6 +37,13 @@ public class ForceCallListener implements Listener {
     }
 
     @Override
+    @PreAuthorize("hasAnyAuthority('ROLE_HC','ROLE_BC','ROLE_ADMIN')")
+    public boolean hasAccess() {
+        return true;
+    }
+
+    @Override
+    @PreAuthorize("hasAnyAuthority('ROLE_HC','ROLE_BC','ROLE_ADMIN')")
     public String getResult(final String username, final String... parameters) {
         if (parameters.length == 1) {
 

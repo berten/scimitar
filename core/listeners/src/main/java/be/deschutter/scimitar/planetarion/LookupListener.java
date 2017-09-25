@@ -1,6 +1,8 @@
 package be.deschutter.scimitar.planetarion;
 
 import be.deschutter.scimitar.Listener;
+import be.deschutter.scimitar.TickerInfo;
+import be.deschutter.scimitar.TickerInfoEao;
 import be.deschutter.scimitar.galaxy.Galaxy;
 import be.deschutter.scimitar.galaxy.GalaxyEao;
 import be.deschutter.scimitar.planet.Planet;
@@ -15,12 +17,14 @@ public class LookupListener implements Listener {
 
     private final PlanetEao planetEao;
     private final GalaxyEao galaxyEao;
+    private TickerInfoEao tickerInfoEao;
 
     @Autowired
-    public LookupListener(final PlanetEao planetEao,
-                          final GalaxyEao galaxyEao) {
+    public LookupListener(final PlanetEao planetEao, final GalaxyEao galaxyEao,
+        final TickerInfoEao tickerInfoEao) {
         this.planetEao = planetEao;
         this.galaxyEao = galaxyEao;
+        this.tickerInfoEao = tickerInfoEao;
     }
 
     @Override
@@ -32,6 +36,7 @@ public class LookupListener implements Listener {
     public String getPattern() {
         return "x y [z]";
     }
+
 
     @Override
     public String getResult(String username, String... parameters) {
@@ -59,8 +64,14 @@ public class LookupListener implements Listener {
                 int x = Integer.parseInt(parameters[0]);
                 int y = Integer.parseInt(parameters[1]);
                 int z = Integer.parseInt(parameters[2]);
+
+
+                final TickerInfo currentTick = tickerInfoEao
+                    .findFirstByOrderByTickDesc();
+
                 Planet p = planetEao
-                        .findFirstByXAndYAndZOrderByTickDesc(x, y, z);
+                    .findByXAndYAndZAndTick(x, y, z, currentTick.getTick());
+
                 if (p == null)
                     return "Planet " + x + ":" + y + ":" + z
                             + " does not exist";
