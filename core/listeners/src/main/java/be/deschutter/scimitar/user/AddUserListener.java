@@ -35,14 +35,13 @@ public class AddUserListener implements Listener {
     }
 
     @Override
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_HC','ROLE_ADMIN')")
     public boolean hasAccess() {
         return true;
     }
 
     @Override
-    @Transactional
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_HC','ROLE_ADMIN')")
     public String getResult(final String username, final String... parameters) {
         if (parameters.length == 0)
 
