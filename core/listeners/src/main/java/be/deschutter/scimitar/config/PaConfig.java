@@ -15,8 +15,10 @@ public class PaConfig {
     private List<Government> governments = new ArrayList<>();
     private Double miningPerRoid;
     private Double maxCap;
+    private Double minCap;
     private Double warBonus;
     private Double valuePerResource;
+    private String scanurl;
 
     public List<Race> getRaces() {
         return races;
@@ -34,6 +36,7 @@ public class PaConfig {
         System.out.println("Maxcap: " + maxCap);
         System.out.println("Warbonus: " + warBonus);
         System.out.println("value per resource: " + valuePerResource);
+        System.out.println("Scanurl: " + scanurl);
     }
 
     public Double getMiningPerRoid() {
@@ -66,5 +69,21 @@ public class PaConfig {
 
     public void setMaxCap(final Double maxCap) {
         this.maxCap = maxCap;
+    }
+
+    public String getScanurl() {
+        return scanurl;
+    }
+
+    public void setScanurl(final String scanurl) {
+        this.scanurl = scanurl;
+    }
+
+    public Double getMinCap() {
+        return minCap;
+    }
+
+    public void setMinCap(final Double minCap) {
+        this.minCap = minCap;
     }
 }

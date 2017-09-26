@@ -39,7 +39,10 @@ pa:
             universeTradeTax: 0.05
     miningPerRoid: 250
     maxCap: 0.20
+    minCap: 0.00
     valuePerResource: 0.01
+    scanurl: http://game.planetarion.com?showscan.pl?scan_id
+    warBonus: 0.05
     governments:
         -   name: Corporatism
             code: Corp
@@ -95,5 +98,7 @@ pa:
             constructionBonus: -0.25
             alertBonus: -0.25
             productionTimeBonus: 0
+
+
 
 

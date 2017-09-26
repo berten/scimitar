@@ -15,5 +15,5 @@ public interface PlanetEao extends JpaRepository<Planet, PlanetPk> {
     Planet findByXAndYAndZAndTick(int x, int y, int z,
         long tick);
 
-    Planet findByPlanetIdAndTick(String planetId, long tick);
+    Planet findByIdAndTick(String planetId, long tick);
 }

@@ -5,13 +5,16 @@ import be.deschutter.scimitar.TickerInfo;
 import be.deschutter.scimitar.TickerInfoEao;
 import be.deschutter.scimitar.planet.Planet;
 import be.deschutter.scimitar.planet.PlanetEao;
-import be.deschutter.scimitar.planet.ScanRequest;
-import be.deschutter.scimitar.planet.ScanRequestEao;
-import be.deschutter.scimitar.planet.ScanType;
+import be.deschutter.scimitar.scans.ScanRequest;
+import be.deschutter.scimitar.scans.ScanRequestEao;
+import be.deschutter.scimitar.scans.ScanType;
 import be.deschutter.scimitar.user.ScimitarUserEao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
+import javax.jms.Topic;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -27,16 +30,20 @@ public class ReqListener implements Listener {
     private ScimitarUserEao scimitarUserEao;
     private ScanRequestEao scanRequestEao;
     private TickerInfoEao tickerInfoEao;
+    private JmsTemplate jmsTemplate;
+    private Topic scanRequestTopic;
 
     @Autowired
     public ReqListener(final PlanetEao planetEao,
         final ScimitarUserEao scimitarUserEao,
-        final ScanRequestEao scanRequestEao,
-        final TickerInfoEao tickerInfoEao) {
+        final ScanRequestEao scanRequestEao, final TickerInfoEao tickerInfoEao,
+        final JmsTemplate jmsTemplate, final Topic scanRequestTopic) {
         this.planetEao = planetEao;
         this.scimitarUserEao = scimitarUserEao;
         this.scanRequestEao = scanRequestEao;
         this.tickerInfoEao = tickerInfoEao;
+        this.jmsTemplate = jmsTemplate;
+        this.scanRequestTopic = scanRequestTopic;
     }
 
     @Override
@@ -51,7 +58,15 @@ public class ReqListener implements Listener {
             + " [dists] | x y z blocks <amps> | cancel <id> | list [amps] | links [amps]";
     }
 
+
     @Override
+    @PreAuthorize("hasAuthority('ROLE_MEMBER')")
+    public boolean hasAccess() {
+        return true;
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('ROLE_MEMBER')")
     public String getResult(final String username, final String... parameters) {
         final TickerInfo currentTick = tickerInfoEao
             .findFirstByOrderByTickDesc();
@@ -131,7 +146,11 @@ public class ReqListener implements Listener {
                         request.setScanType(
                             ScanType.valueOf(String.valueOf((char) value)));
                         scanRequestEao.save(request);
+                        jmsTemplate.convertAndSend(scanRequestTopic,
+                            String.format("New Scan Request: %s on %d:%d:%d https://game.planetarion.com/waves.pl?id=%d&x=%d&y=%d&z=%d",request.getScanType().name(),x,y,z,request.getScanType().ordinal(),x,y,z));
                     });
+
+
 
                     return String
                         .format("Requested %s scan(s) for coords: %s:%s:%s",
@@ -160,7 +179,7 @@ public class ReqListener implements Listener {
         Map<Planet, Set<ScanRequest>> reqs = new HashMap<>();
         scanRequests.forEach(scanRequest -> {
             final Planet planet = planetEao
-                .findByPlanetIdAndTick(scanRequest.getPlanetId(),
+                .findByIdAndTick(scanRequest.getPlanetId(),
                     currentTick.getTick());
             if (planet.getDists() <= amps)
                 reqs.computeIfAbsent(planet, k -> new HashSet<>())
@@ -189,7 +208,7 @@ public class ReqListener implements Listener {
 
         return scanRequests.stream().map(scanRequest -> {
             final Planet planet = planetEao
-                .findByPlanetIdAndTick(scanRequest.getPlanetId(),
+                .findByIdAndTick(scanRequest.getPlanetId(),
                     currentTick.getTick());
             return new ScanRequestBuffed(scanRequest, planet);
         }).filter(scanRequestBuffed -> scanRequestBuffed.getPlanet().getDists()

@@ -4,9 +4,9 @@ import be.deschutter.scimitar.TickerInfo;
 import be.deschutter.scimitar.TickerInfoEao;
 import be.deschutter.scimitar.planet.Planet;
 import be.deschutter.scimitar.planet.PlanetEao;
-import be.deschutter.scimitar.planet.ScanRequest;
-import be.deschutter.scimitar.planet.ScanRequestEao;
-import be.deschutter.scimitar.planet.ScanType;
+import be.deschutter.scimitar.scans.ScanRequest;
+import be.deschutter.scimitar.scans.ScanRequestEao;
+import be.deschutter.scimitar.scans.ScanType;
 import be.deschutter.scimitar.user.ScimitarUser;
 import be.deschutter.scimitar.user.ScimitarUserEao;
 import org.junit.Before;
@@ -16,7 +16,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.jms.core.JmsTemplate;
 
+import javax.jms.Topic;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,6 +40,11 @@ public class ReqListenerTest {
     private ScanRequestEao scanRequestEao;
     @Mock
     private TickerInfoEao tickerInfoEao;
+    @Mock
+    private JmsTemplate jmsTemplate;
+@Mock
+    private Topic scanRequestTopic;
+
     private ScimitarUser scimitarUser;
     private ScanRequest sr3;
     private ScanRequest sr4;
@@ -68,7 +75,7 @@ public class ReqListenerTest {
         p1.setX(1);
         p1.setY(2);
         p1.setZ(3);
-        when(planetEao.findByPlanetIdAndTick("planetid1", 123)).thenReturn(p1);
+        when(planetEao.findByIdAndTick("planetid1", 123)).thenReturn(p1);
         when(planetEao.findByXAndYAndZAndTick(1, 2, 3, 123)).thenReturn(p1);
 
         p2 = new Planet();
@@ -76,14 +83,14 @@ public class ReqListenerTest {
         p2.setX(4);
         p2.setY(5);
         p2.setZ(6);
-        when(planetEao.findByPlanetIdAndTick("planetid2", 123)).thenReturn(p2);
+        when(planetEao.findByIdAndTick("planetid2", 123)).thenReturn(p2);
 
         p3 = new Planet();
         p3.setDists(3);
         p3.setX(7);
         p3.setY(8);
         p3.setZ(9);
-        when(planetEao.findByPlanetIdAndTick("planetid3", 123)).thenReturn(p3);
+        when(planetEao.findByIdAndTick("planetid3", 123)).thenReturn(p3);
 
         sr1 = new ScanRequest();
         sr1.setPlanetId("planetid1");
@@ -223,6 +230,7 @@ public class ReqListenerTest {
         assertThat(captor.getValue().getScanId()).isNull();
         assertThat(captor.getValue().isDelivered()).isFalse();
         assertThat(captor.getValue().getRequestedBy()).isSameAs(scimitarUser);
+        verify(jmsTemplate).convertAndSend(scanRequestTopic,"New Scan Request: P on 1:1:1 https://game.planetarion.com/waves.pl?id=0&x=1&y=1&z=1");
     }
 
     @Test
@@ -243,8 +251,8 @@ public class ReqListenerTest {
 
     @Test
     public void getResult_PlanetDoesntExist() throws Exception {
-        assertThat(reqListener.getResult("username", "1", "2", "3", "p"))
-            .isEqualTo("Planet 1:2:3 does not exist");
+        assertThat(reqListener.getResult("username", "6", "6", "6", "p"))
+            .isEqualTo("Planet 6:6:6 does not exist");
         verifyZeroInteractions(scanRequestEao);
     }
 

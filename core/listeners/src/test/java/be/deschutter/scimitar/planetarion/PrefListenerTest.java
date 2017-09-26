@@ -25,11 +25,10 @@ public class PrefListenerTest {
     private PlanetEao planetEao;
     @Mock
     private ScimitarUserEao scimitarUserEao;
-    private ScimitarUser user;
 
     @Before
     public void setUp() throws Exception {
-        user = new ScimitarUser();
+        final ScimitarUser user = new ScimitarUser();
         when(scimitarUserEao.findByUsernameIgnoreCase("Berten"))
             .thenReturn(user);
 

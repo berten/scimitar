@@ -2,10 +2,12 @@ package be.deschutter.scimitar;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.jms.Topic;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.StringJoiner;
@@ -16,7 +18,11 @@ public class HelpListener implements Listener {
 
     private ApplicationContext context;
     private Collection<Listener> listeners;
+    @Autowired
+    private JmsTemplate jmsTemplate;
 
+    @Autowired
+    private Topic scanRequestTopic;
     @PostConstruct
     public void loadListeners() {
         listeners = context.getBeansOfType(Listener.class).values();
@@ -34,7 +40,7 @@ public class HelpListener implements Listener {
 
     @Override
     public String getResult(String username, String... parameters) {
-
+        jmsTemplate.convertAndSend(scanRequestTopic,"Testje");
         if (parameters == null || parameters.length == 0) {
             StringJoiner joiner = new StringJoiner(", ");
             listeners.stream()

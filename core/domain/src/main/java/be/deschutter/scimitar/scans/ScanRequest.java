@@ -1,4 +1,4 @@
-package be.deschutter.scimitar.planet;
+package be.deschutter.scimitar.scans;
 
 import be.deschutter.scimitar.user.ScimitarUser;
 

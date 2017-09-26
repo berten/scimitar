@@ -12,23 +12,30 @@ import java.util.regex.Pattern;
 public class EventFactoryImpl implements EventFactory {
 
     @Override
-    public Event makeEvent(me.ramswaroop.jbot.core.slack.models.Event messageEvent) {
+    public Event makeEvent(
+        me.ramswaroop.jbot.core.slack.models.Event messageEvent) {
         Event event = new Event();
 
         event.setChannel(messageEvent.getChannelId());
         event.setCurrentUsername(messageEvent.getUserId());
         event.setLoggedInUsername(messageEvent.getUserId());
 
-        Pattern commandPatern = Pattern.compile("(^[\\.!\\-])([a-zA-Z]*)\\s*(.*)");
+        Pattern commandPatern = Pattern
+            .compile("(^[\\.!\\-])([a-zA-Z]*)\\s*(.*)");
         Matcher matcher = commandPatern.matcher(messageEvent.getText());
         if (matcher.matches()) {
             event.setReturnType(ReturnType.findByPrefix(matcher.group(1)));
             event.setCommand(matcher.group(2));
             String parameters = matcher.group(3);
-            if(!StringUtils.isEmpty(parameters)) {
+            if (event.getCommand().toUpperCase().equals("REGCHAN")) {
+                parameters += " " + messageEvent.getChannelId();
+            }
+
+            if (!StringUtils.isEmpty(parameters)) {
                 event.setParameters(parameters.split(":|\\s+"));
             }
         }
+
         return event;
     }
 }
