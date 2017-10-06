@@ -2,3 +2,5 @@ language: java
 cache:
   directories:
   - $HOME/.m2ls
+before-install:
+  - git submodule update --init --recursive
