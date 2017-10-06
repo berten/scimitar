@@ -3,5 +3,4 @@ cache:
   directories:
   - $HOME/.m2ls
 before-install:
-  - git submodule update --init --recursive
-  - mvn clean install /home/travis/build/berten/scimitar/jbot
+  - git submodule update --init
