@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
-import javax.transaction.Transactional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -14,11 +13,11 @@ import static java.util.Arrays.stream;
 @Component
 
 public class AddUserListener implements Listener {
-    private final ScimitarUserEao scimitarUserEao;
+    private final UserService userService;
 
     @Autowired
-    public AddUserListener(final ScimitarUserEao scimitarUserEao) {
-        this.scimitarUserEao = scimitarUserEao;
+    public AddUserListener(final UserService userService) {
+        this.userService = userService;
     }
 
     @Override
@@ -42,42 +41,41 @@ public class AddUserListener implements Listener {
 
     @Override
     @PreAuthorize("hasAnyAuthority('ROLE_HC','ROLE_ADMIN')")
-    public String getResult(final String username, final String... parameters) {
+    public String getResult(final String... parameters) {
         if (parameters.length == 0)
 
             return getErrorMessage();
         else if (parameters.length == 1) {
             final String usernameToAdd = parameters[0];
-            final ScimitarUser user = scimitarUserEao
-                .findByUsernameIgnoreCase(usernameToAdd);
-            if (user != null)
-                return userExistsMessage(user);
-            else {
+            try {
+                return userExistsMessage(userService.findBy(usernameToAdd));
+            } catch (UserNotFoundException e) {
                 ScimitarUser u = new ScimitarUser();
                 u.setUsername(usernameToAdd);
                 u.addRole(RoleEnum.MEMBER);
-                u = scimitarUserEao.saveAndFlush(u);
+                u = userService.save(u);
                 return makeReturnString(u);
             }
+
         } else {
             final String usernameToAdd = parameters[0];
-            final ScimitarUser user = scimitarUserEao
-                .findByUsernameIgnoreCase(usernameToAdd);
-            if (user != null)
-                return userExistsMessage(user);
-            else {
+            try {
+                return userExistsMessage(userService.findBy(usernameToAdd));
+            } catch (UserNotFoundException e) {
                 ScimitarUser u = new ScimitarUser();
                 u.setUsername(usernameToAdd);
                 IntStream.range(1, parameters.length).filter(
                     i -> stream(RoleEnum.values()).map(Enum::name)
-                        .collect(Collectors.toList()).contains(parameters[i].toUpperCase()))
-                    .mapToObj(i -> RoleEnum.valueOf(parameters[i].toUpperCase()))
+                        .collect(Collectors.toList())
+                        .contains(parameters[i].toUpperCase())).mapToObj(
+                    i -> RoleEnum.valueOf(parameters[i].toUpperCase()))
                     .forEach(u::addRole);
-                u = scimitarUserEao.saveAndFlush(u);
+                u = userService.save(u);
                 return makeReturnString(u);
             }
 
         }
+
     }
 
     private String userExistsMessage(final ScimitarUser user) {

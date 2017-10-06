@@ -50,6 +50,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>be.deschutter.scimitar.core</groupId>
+            <artifactId>services</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
         </dependency>

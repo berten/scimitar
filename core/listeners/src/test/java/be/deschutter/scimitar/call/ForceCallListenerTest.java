@@ -45,7 +45,7 @@ public class ForceCallListenerTest {
 
     @Test
     public void getResult_noNumber() throws Exception {
-        assertThat(forceCallListener.getResult("Berten")).isEqualTo(
+        assertThat(forceCallListener.getResult()).isEqualTo(
             "Error: use following pattern for command forcecall: number");
         verifyZeroInteractions(taskExecutor);
     }
@@ -53,7 +53,7 @@ public class ForceCallListenerTest {
     @Test
     public void getResult_knownUsername() throws Exception {
 
-        assertThat(forceCallListener.getResult("Berten", "phone"))
+        assertThat(forceCallListener.getResult("phone"))
             .isEqualTo("Call queued to phone");
         verify(taskExecutor).execute(any(Runnable.class));
     }

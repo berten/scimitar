@@ -7,8 +7,8 @@ import be.deschutter.scimitar.planet.PlanetEao;
 import be.deschutter.scimitar.scans.ScanRequest;
 import be.deschutter.scimitar.scans.ScanRequestEao;
 import be.deschutter.scimitar.scans.ScanType;
+import be.deschutter.scimitar.security.SecurityHelper;
 import be.deschutter.scimitar.user.ScimitarUser;
-import be.deschutter.scimitar.user.ScimitarUserEao;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,7 +31,7 @@ public class ReqListenerTest {
     private ReqListener reqListener;
 
     @Mock
-    private ScimitarUserEao scimitarUserEao;
+    private SecurityHelper securityHelper;
 
     @Mock
     private PlanetEao planetEao;
@@ -42,7 +42,7 @@ public class ReqListenerTest {
     private TickerInfoEao tickerInfoEao;
     @Mock
     private JmsTemplate jmsTemplate;
-@Mock
+    @Mock
     private Topic scanRequestTopic;
 
     private ScimitarUser scimitarUser;
@@ -59,8 +59,7 @@ public class ReqListenerTest {
     public void setUp() throws Exception {
         scimitarUser = new ScimitarUser();
         scimitarUser.setUsername("username");
-        when(scimitarUserEao.findByUsernameIgnoreCase("username"))
-            .thenReturn(scimitarUser);
+        when(securityHelper.getLoggedInUser()).thenReturn(scimitarUser);
         when(tickerInfoEao.findFirstByOrderByTickDesc())
             .thenReturn(new TickerInfo(123));
 
@@ -137,8 +136,7 @@ public class ReqListenerTest {
 
     @Test
     public void blocks() throws Exception {
-        assertThat(
-            reqListener.getResult("username", "1", "2", "3", "blocks", "13"))
+        assertThat(reqListener.getResult("1", "2", "3", "blocks", "13"))
             .isEqualTo("Updated intelligence on 1:2:3 to 13 dists");
         final ArgumentCaptor<Planet> captor = ArgumentCaptor
             .forClass(Planet.class);
@@ -151,7 +149,7 @@ public class ReqListenerTest {
 
         when(scanRequestEao.findByScanIdIsNull())
             .thenReturn(Arrays.asList(sr1, sr2, sr3, sr5));
-        assertThat(reqListener.getResult("username", "list"))
+        assertThat(reqListener.getResult("list"))
             .isEqualTo("[1:2:3 (0) 1:P|2:D] [4:5:6 (20) 3:A] [7:8:9 (3) 5:J]");
     }
 
@@ -160,7 +158,7 @@ public class ReqListenerTest {
 
         when(scanRequestEao.findByScanIdIsNull())
             .thenReturn(Arrays.asList(sr1, sr2, sr3, sr5));
-        assertThat(reqListener.getResult("username", "list", "13"))
+        assertThat(reqListener.getResult("list", "13"))
             .isEqualTo("[1:2:3 (0) 1:P|2:D] [7:8:9 (3) 5:J]");
     }
 
@@ -169,7 +167,7 @@ public class ReqListenerTest {
 
         when(scanRequestEao.findByScanIdIsNull())
             .thenReturn(Arrays.asList(sr1, sr2, sr3, sr5));
-        assertThat(reqListener.getResult("username", "links")).isEqualTo(
+        assertThat(reqListener.getResult("links")).isEqualTo(
             "[1 (0) : https://game.planetarion.com/waves.pl?id=0&x=1&y=2&z=3] [2 (0) : https://game.planetarion.com/waves.pl?id=1&x=1&y=2&z=3] [3 (20) : https://game.planetarion.com/waves.pl?id=6&x=4&y=5&z=6] [5 (3) : https://game.planetarion.com/waves.pl?id=5&x=7&y=8&z=9]");
     }
 
@@ -178,48 +176,46 @@ public class ReqListenerTest {
 
         when(scanRequestEao.findByScanIdIsNull())
             .thenReturn(Arrays.asList(sr1, sr2, sr3, sr5));
-        assertThat(reqListener.getResult("username", "links", "13")).isEqualTo(
+        assertThat(reqListener.getResult("links", "13")).isEqualTo(
             "[1 (0) : https://game.planetarion.com/waves.pl?id=0&x=1&y=2&z=3] [2 (0) : https://game.planetarion.com/waves.pl?id=1&x=1&y=2&z=3] [5 (3) : https://game.planetarion.com/waves.pl?id=5&x=7&y=8&z=9]");
     }
 
     @Test
     public void cancel() throws Exception {
-        assertThat(reqListener.getResult("username", "cancel", "13"))
+        assertThat(reqListener.getResult("cancel", "13"))
             .isEqualTo("Scanrequest 13 successfully cancelled");
         verify(scanRequestEao).delete(13);
     }
 
     @Test
     public void cancel_not_an_id() throws Exception {
-        assertThat(reqListener.getResult("username", "cancel", "xx")).isEqualTo(
+        assertThat(reqListener.getResult("cancel", "xx")).isEqualTo(
             "Error: use following pattern for command req: x y z P|D|U|N|I|J|A [dists] | x y z blocks <amps> | cancel <id> | list [amps] | links [amps]");
     }
 
     @Test
     public void getResult_1Parameter_NotLinkLIst() throws Exception {
 
-        assertThat(reqListener.getResult("username", "sports")).isEqualTo(
+        assertThat(reqListener.getResult("sports")).isEqualTo(
             "Error: use following pattern for command req: x y z P|D|U|N|I|J|A [dists] | x y z blocks <amps> | cancel <id> | list [amps] | links [amps]");
     }
 
     @Test
     public void getResult_2Parameter_NotLinkLIstCancel() throws Exception {
 
-        assertThat(reqListener.getResult("username", "sports", "blaat"))
-            .isEqualTo(
-                "Error: use following pattern for command req: x y z P|D|U|N|I|J|A [dists] | x y z blocks <amps> | cancel <id> | list [amps] | links [amps]");
+        assertThat(reqListener.getResult("sports", "blaat")).isEqualTo(
+            "Error: use following pattern for command req: x y z P|D|U|N|I|J|A [dists] | x y z blocks <amps> | cancel <id> | list [amps] | links [amps]");
     }
 
     @Test
     public void getResult_XYZNotNumeric() throws Exception {
-        assertThat(reqListener.getResult("username", "1", "1", "Z", "pda"))
-            .isEqualTo(
-                "Error: use following pattern for command req: x y z P|D|U|N|I|J|A [dists] | x y z blocks <amps> | cancel <id> | list [amps] | links [amps]");
+        assertThat(reqListener.getResult("1", "1", "Z", "pda")).isEqualTo(
+            "Error: use following pattern for command req: x y z P|D|U|N|I|J|A [dists] | x y z blocks <amps> | cancel <id> | list [amps] | links [amps]");
     }
 
     @Test
     public void getResult() throws Exception {
-        assertThat(reqListener.getResult("username", "1", "1", "1", "p"))
+        assertThat(reqListener.getResult("1", "1", "1", "p"))
             .isEqualTo("Requested p scan(s) for coords: 1:1:1");
         final ArgumentCaptor<ScanRequest> captor = ArgumentCaptor
             .forClass(ScanRequest.class);
@@ -230,12 +226,13 @@ public class ReqListenerTest {
         assertThat(captor.getValue().getScanId()).isNull();
         assertThat(captor.getValue().isDelivered()).isFalse();
         assertThat(captor.getValue().getRequestedBy()).isSameAs(scimitarUser);
-        verify(jmsTemplate).convertAndSend(scanRequestTopic,"New Scan Request: P on 1:1:1 https://game.planetarion.com/waves.pl?id=0&x=1&y=1&z=1");
+        verify(jmsTemplate).convertAndSend(scanRequestTopic,
+            "New Scan Request: P on 1:1:1 https://game.planetarion.com/waves.pl?id=0&x=1&y=1&z=1");
     }
 
     @Test
     public void getResult_multipleScans() throws Exception {
-        assertThat(reqListener.getResult("username", "1", "1", "1", "pda"))
+        assertThat(reqListener.getResult("1", "1", "1", "pda"))
             .isEqualTo("Requested pda scan(s) for coords: 1:1:1");
         final ArgumentCaptor<ScanRequest> captor = ArgumentCaptor
             .forClass(ScanRequest.class);
@@ -251,7 +248,7 @@ public class ReqListenerTest {
 
     @Test
     public void getResult_PlanetDoesntExist() throws Exception {
-        assertThat(reqListener.getResult("username", "6", "6", "6", "p"))
+        assertThat(reqListener.getResult("6", "6", "6", "p"))
             .isEqualTo("Planet 6:6:6 does not exist");
         verifyZeroInteractions(scanRequestEao);
     }

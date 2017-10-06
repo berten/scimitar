@@ -1,11 +1,9 @@
 package be.deschutter.scimitar.planetarion;
 
 import be.deschutter.scimitar.Listener;
-import be.deschutter.scimitar.TickerInfo;
-import be.deschutter.scimitar.TickerInfoEao;
 import be.deschutter.scimitar.config.PaConfig;
 import be.deschutter.scimitar.planet.Planet;
-import be.deschutter.scimitar.planet.PlanetEao;
+import be.deschutter.scimitar.planet.PlanetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,9 +13,7 @@ import java.math.BigDecimal;
 public class MaxcapListener implements Listener {
 
     @Autowired
-    private PlanetEao planetEao;
-    @Autowired
-    private TickerInfoEao tickerInfoEao;
+    private PlanetService planetService;
     @Autowired
     private PaConfig paConfig;
 
@@ -32,7 +28,7 @@ public class MaxcapListener implements Listener {
     }
 
     @Override
-    public String getResult(final String username, final String... parameters) {
+    public String getResult(final String... parameters) {
         if (parameters.length == 3) {
             return "not implemented yet";
         } else if (parameters.length == 6) {
@@ -44,22 +40,16 @@ public class MaxcapListener implements Listener {
                 int xAttacker = Integer.parseInt(parameters[3]);
                 int yAttacker = Integer.parseInt(parameters[4]);
                 int zAttacker = Integer.parseInt(parameters[5]);
-                final TickerInfo currentTick = tickerInfoEao
-                    .findFirstByOrderByTickDesc();
 
-                final Planet attackingPlanet = planetEao
-                    .findByXAndYAndZAndTick(xAttacker, yAttacker, zAttacker,
-                        currentTick.getTick());
-                final Planet targetPlanet = planetEao
-                    .findByXAndYAndZAndTick(xTarget, yTarget, zTarget,
-                        currentTick.getTick());
+                final Planet attackingPlanet = planetService
+                    .findBy(xAttacker, yAttacker, zAttacker);
+                final Planet targetPlanet = planetService
+                    .findBy(xTarget, yTarget, zTarget);
 
                 final BigDecimal modifier = BigDecimal
-                    .valueOf(targetPlanet.getValue()).divide(BigDecimal.valueOf(attackingPlanet.getValue()));
+                    .valueOf(targetPlanet.getValue())
+                    .divide(BigDecimal.valueOf(attackingPlanet.getValue()));
                 final double stuffz = Math.pow(modifier.doubleValue(), 0.5);
-
-
-
 
                 final double maxcap = paConfig.getMaxCap() * stuffz;
                 return "maxcap: " + Math.floor(maxcap * 100) + "% " + Math

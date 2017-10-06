@@ -29,7 +29,6 @@ public class CallConfig {
         return new ActiveMQTopic("scanRequests");
     }
 
-
     @Bean
     public TaskExecutor taskExecutor() {
         final ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();

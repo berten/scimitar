@@ -52,6 +52,12 @@ public class Alliance {
     @Column(nullable = true)
     private int membersGrowth = 0;
 
+    public Alliance(final String allianceName) {
+        this.allianceName = allianceName;
+    }
+
+    public Alliance() {
+    }
 
     public int getCountedScoreRank() {
         return countedScoreRank;

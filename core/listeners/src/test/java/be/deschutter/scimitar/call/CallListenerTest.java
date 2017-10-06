@@ -1,7 +1,7 @@
 package be.deschutter.scimitar.call;
 
 import be.deschutter.scimitar.user.ScimitarUser;
-import be.deschutter.scimitar.user.ScimitarUserEao;
+import be.deschutter.scimitar.user.UserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +23,7 @@ public class CallListenerTest {
     private CallListener callListener;
 
     @Mock
-    private ScimitarUserEao scimitarUserEao;
+    private UserService userService;
     @Mock
     private TaskExecutor taskExecutor;
 
@@ -46,7 +46,7 @@ public class CallListenerTest {
 
     @Test
     public void getResult_noUsername() throws Exception {
-        assertThat(callListener.getResult("Berten")).isEqualTo("Error: use following pattern for command call: username");
+        assertThat(callListener.getResult()).isEqualTo("Error: use following pattern for command call: username");
         verifyZeroInteractions(taskExecutor);
     }
 
@@ -55,17 +55,12 @@ public class CallListenerTest {
         final ScimitarUser t = new ScimitarUser();
         t.setPhoneNumber("phone");
         t.setUsername("knownUsername");
-        when(scimitarUserEao.findByUsernameIgnoreCase("knownusername")).thenReturn(
+        when(userService.findBy("knownusername")).thenReturn(
             t);
-        assertThat(callListener.getResult("Berten","knownusername")).isEqualTo("Call queued to knownUsername");
+        assertThat(callListener.getResult("knownusername")).isEqualTo("Call queued to knownUsername");
         verify(taskExecutor).execute(any(Runnable.class));
     }
 
-    @Test
-    public void getResult_UnknownUsername() throws Exception {
-        when(scimitarUserEao.findByUsernameIgnoreCase("unknownusername")).thenReturn(null);
-        assertThat(callListener.getResult("Berten","unknownusername")).isEqualTo("User unknownusername does not exist");
-        verifyZeroInteractions(taskExecutor);
-    }
+
 
 }

@@ -27,7 +27,7 @@ public class RoidcostListener implements Listener {
     }
 
     @Override
-    public String getResult(final String username, final String... parameters) {
+    public String getResult(final String... parameters) {
         if (parameters != null && parameters.length == 3) {
             try {
 

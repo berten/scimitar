@@ -1,7 +1,8 @@
 package be.deschutter.scimitar;
 
 import be.deschutter.scimitar.channel.ChannelConfiguration;
-import be.deschutter.scimitar.channel.ChannelConfigurationEao;
+import be.deschutter.scimitar.channel.ChannelDoesNotExistException;
+import be.deschutter.scimitar.channel.ChannelService;
 import be.deschutter.scimitar.channel.ChannelType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +23,7 @@ public class RegChanListenerTest {
     private RegChanListener regChanListener;
 
     @Mock
-    private ChannelConfigurationEao channelConfigurationEao;
+    private ChannelService channelService;
 
     @Test
     public void getCommand() throws Exception {
@@ -37,18 +38,19 @@ public class RegChanListenerTest {
 
     @Test
     public void getResult_NoExtraParameter() throws Exception {
-        assertThat(regChanListener.getResult("berten", "SCAN"))
+        assertThat(regChanListener.getResult("SCAN"))
             .isEqualTo("This command should only be used in slack");
     }
 
     @Test
     public void getResult_Saved() throws Exception {
+        when(channelService.findBy("slackChannelId")).thenThrow(new ChannelDoesNotExistException("slackChannelId"));
         assertThat(
-            regChanListener.getResult("berten", "SCAN", "slackChannelId"))
+            regChanListener.getResult("SCAN", "slackChannelId"))
             .isEqualTo("Channel Regged for type SCAN");
         final ArgumentCaptor<ChannelConfiguration> captor = ArgumentCaptor
             .forClass(ChannelConfiguration.class);
-        verify(channelConfigurationEao).save(captor.capture());
+        verify(channelService).save(captor.capture());
         assertThat(captor.getValue().getChannelType()).isEqualTo(
             ChannelType.SCAN);
         assertThat(captor.getValue().getChannelName()).isEqualTo("slackChannelId");
@@ -58,15 +60,16 @@ public class RegChanListenerTest {
     @Test
     public void getResult_AlreadyExistsForChannelId_NotSaved() throws Exception {
         final ChannelConfiguration c = new ChannelConfiguration();
+        c.setChannelName("SLACKCHANNELID");
         c.setChannelType(ChannelType.ATTACK);
-        when(channelConfigurationEao.findByChannelName("slackChannelId")).thenReturn(
+        when(channelService.findBy("slackChannelId")).thenReturn(
             c);
         assertThat(
-            regChanListener.getResult("berten", "SCAN", "slackChannelId"))
-            .isEqualTo("Channel allready regged for type ATTACK");
+            regChanListener.getResult("SCAN", "slackChannelId"))
+            .isEqualTo("Channel SLACKCHANNELID allready regged for type ATTACK");
         final ArgumentCaptor<ChannelConfiguration> captor = ArgumentCaptor
             .forClass(ChannelConfiguration.class);
-        verify(channelConfigurationEao,never()).save(any(ChannelConfiguration.class));
+        verify(channelService,never()).save(any(ChannelConfiguration.class));
     }
 
 }

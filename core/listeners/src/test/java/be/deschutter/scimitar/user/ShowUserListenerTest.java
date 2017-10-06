@@ -1,5 +1,6 @@
 package be.deschutter.scimitar.user;
 
+import be.deschutter.scimitar.security.SecurityHelper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -15,11 +16,13 @@ public class ShowUserListenerTest {
     private ShowUserListener showUserListener;
 
     @Mock
-    private ScimitarUserEao scimitarUserEao;
+    private UserService userService;
+    @Mock
+    private SecurityHelper securityHelper;
 
     @Test
     public void getCommand() throws Exception {
-    assertThat(showUserListener.getCommand()).isEqualTo("showuser");
+        assertThat(showUserListener.getCommand()).isEqualTo("showuser");
     }
 
     @Test
@@ -33,15 +36,9 @@ public class ShowUserListenerTest {
         u.setUsername("Berten");
         u.addRole(RoleEnum.ADMIN);
         u.addRole(RoleEnum.MEMBER);
-        when(scimitarUserEao.findByUsernameIgnoreCase("Berten")).thenReturn(
-            u);
-        assertThat(showUserListener.getResult("Berten")).isEqualTo("User roles for username Berten: ADMIN,MEMBER");
-    }
-
-    @Test
-    public void getResult_unknownUsername() throws Exception {
-
-        assertThat(showUserListener.getResult("Berten","unknownUser")).isEqualTo("User unknownUser does not exist");
+        when(securityHelper.getLoggedInUser()).thenReturn(u);
+        assertThat(showUserListener.getResult())
+            .isEqualTo("User roles for username Berten: ADMIN,MEMBER");
     }
 
     @Test
@@ -50,9 +47,9 @@ public class ShowUserListenerTest {
         u.setUsername("KnownUsername");
         u.addRole(RoleEnum.ADMIN);
         u.addRole(RoleEnum.MEMBER);
-        when(scimitarUserEao.findByUsernameIgnoreCase("knownUsername")).thenReturn(
-            u);
-        assertThat(showUserListener.getResult("Berten","knownUsername")).isEqualTo("User roles for username KnownUsername: ADMIN,MEMBER");
+        when(userService.findBy("knownUsername")).thenReturn(u);
+        assertThat(showUserListener.getResult("knownUsername"))
+            .isEqualTo("User roles for username KnownUsername: ADMIN,MEMBER");
     }
 
 }

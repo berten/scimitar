@@ -5,8 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
-import javax.transaction.Transactional;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
@@ -15,11 +13,11 @@ import static java.util.Arrays.stream;
 
 public class ChangeUserListener implements Listener {
 
-    private final ScimitarUserEao scimitarUserEao;
+    private final UserService userService;
 
     @Autowired
-    public ChangeUserListener(final ScimitarUserEao scimitarUserEao) {
-        this.scimitarUserEao = scimitarUserEao;
+    public ChangeUserListener(final UserService userService) {
+        this.userService = userService;
     }
 
     @Override
@@ -44,43 +42,36 @@ public class ChangeUserListener implements Listener {
 
     @Override
     @PreAuthorize("hasAnyAuthority('ROLE_HC','ROLE_ADMIN')")
-    public String getResult(final String username, final String... parameters) {
+    public String getResult(final String... parameters) {
         if (parameters.length < 3)
             return getErrorMessage();
         else {
-            ScimitarUser user = scimitarUserEao
-                .findByUsernameIgnoreCase(parameters[0]);
-            if (user == null)
-                return "Error: Unknown user " + parameters[0];
-            else
-                switch (parameters[1].toUpperCase()) {
-                case "ADD":
-                    for (int i = 2; i < parameters.length; i++) {
-                        final String role = parameters[i].toUpperCase();
-                        if (stream(RoleEnum.values()).map(Enum::name)
-                            .collect(Collectors.toList())
-                            .contains(role)) {
-                            user.addRole(RoleEnum.valueOf(
-                                role));
-                        }
-                    }
-                    break;
-                case "REMOVE":
-                    for (int i = 2; i < parameters.length; i++) {
-                        final String role = parameters[i].toUpperCase();
-                        if (stream(RoleEnum.values()).map(Enum::name)
-                            .collect(Collectors.toList())
-                            .contains(role)) {
-                            user.removeRole(RoleEnum.valueOf(
-                                role));
+            ScimitarUser user = userService.findBy(parameters[0]);
 
-                        }
+            switch (parameters[1].toUpperCase()) {
+            case "ADD":
+                for (int i = 2; i < parameters.length; i++) {
+                    final String role = parameters[i].toUpperCase();
+                    if (stream(RoleEnum.values()).map(Enum::name)
+                        .collect(Collectors.toList()).contains(role)) {
+                        user.addRole(RoleEnum.valueOf(role));
                     }
-                    break;
-                default:
-                    return getErrorMessage();
                 }
-            user = scimitarUserEao.saveAndFlush(user);
+                break;
+            case "REMOVE":
+                for (int i = 2; i < parameters.length; i++) {
+                    final String role = parameters[i].toUpperCase();
+                    if (stream(RoleEnum.values()).map(Enum::name)
+                        .collect(Collectors.toList()).contains(role)) {
+                        user.removeRole(RoleEnum.valueOf(role));
+
+                    }
+                }
+                break;
+            default:
+                return getErrorMessage();
+            }
+            user = userService.save(user);
             return String.format("New access for users %s: %s", parameters[0],
                 String.join(",",
                     user.getRoles().stream().map(role -> role.getRole().name())

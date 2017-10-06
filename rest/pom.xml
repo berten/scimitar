@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>Parent</artifactId>
         <groupId>be.deschutter.scimitar</groupId>
@@ -18,7 +18,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
         </dependency>
-
 
 
         <dependency>
@@ -48,6 +47,13 @@
             <groupId>be.deschutter.scimitar.core</groupId>
             <artifactId>listeners</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>be.deschutter.scimitar.core</groupId>
+            <artifactId>services-impl</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
 

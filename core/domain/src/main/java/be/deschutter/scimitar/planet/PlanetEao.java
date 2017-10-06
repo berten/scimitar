@@ -10,10 +10,12 @@ public interface PlanetEao extends JpaRepository<Planet, PlanetPk> {
 
     Planet findFirstByXAndYAndZOrderByTickDesc(int x, int y, int z);
 
-    List<Planet> findFirst15ByXAndYAndZOrderByTickDesc(int x, int y, int z);
+    List<Planet> findFirst15ByIdOrderByTickDesc(String planetId);
 
     Planet findByXAndYAndZAndTick(int x, int y, int z,
         long tick);
 
     Planet findByIdAndTick(String planetId, long tick);
+
+    List<Planet> findByXAndYAndTick(int x, int y, long tick);
 }

@@ -2,7 +2,7 @@ package be.deschutter.scimitar.call;
 
 import be.deschutter.scimitar.Listener;
 import be.deschutter.scimitar.user.ScimitarUser;
-import be.deschutter.scimitar.user.ScimitarUserEao;
+import be.deschutter.scimitar.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.task.TaskExecutor;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 
 public class CallListener implements Listener {
-    private final ScimitarUserEao scimitarUserEao;
+    private final UserService userService;
 
     private final TaskExecutor taskExecutor;
     @Value("${twilio.account.sid}")
@@ -25,9 +25,9 @@ public class CallListener implements Listener {
     private String twilioPhoneNumber;
 
     @Autowired
-    public CallListener(final ScimitarUserEao scimitarUserEao,
+    public CallListener(final UserService userService,
         final TaskExecutor taskExecutor) {
-        this.scimitarUserEao = scimitarUserEao;
+        this.userService = userService;
         this.taskExecutor = taskExecutor;
     }
 
@@ -49,21 +49,19 @@ public class CallListener implements Listener {
 
     @Override
     @PreAuthorize("hasAuthority('ROLE_MEMBER')")
-    public String getResult(final String username, final String... parameters) {
+    public String getResult(final String... parameters) {
         if (parameters.length == 1) {
-            final ScimitarUser user = scimitarUserEao
-                .findByUsernameIgnoreCase(parameters[0]);
-            if (user == null) {
-                return "User " + parameters[0] + " does not exist";
-            }
+            final ScimitarUser user = userService.findBy(parameters[0]);
+
             if (user.getPhoneNumber() == null || user.getPhoneNumber()
                 .isEmpty()) {
-                return "User " + username
+                return "User " + parameters[0]
                     + " does not have a phonenumber added";
             }
 
-            taskExecutor.execute(new CallRunner(user.getPhoneNumber(), twilioAcountSid,
-                twilioAuthToken, twilioPhoneNumber));
+            taskExecutor.execute(
+                new CallRunner(user.getPhoneNumber(), twilioAcountSid,
+                    twilioAuthToken, twilioPhoneNumber));
 
             return "Call queued to " + user.getUsername();
 

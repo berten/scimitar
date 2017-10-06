@@ -1,7 +1,8 @@
 package be.deschutter.scimitar.call;
 
+import be.deschutter.scimitar.security.SecurityHelper;
 import be.deschutter.scimitar.user.ScimitarUser;
-import be.deschutter.scimitar.user.ScimitarUserEao;
+import be.deschutter.scimitar.user.UserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +18,9 @@ public class SmsListenerTest {
     @InjectMocks
     private SmsListener smsListener;
     @Mock
-    private ScimitarUserEao scimitarUserEao;
+    private SecurityHelper securityHelper;
+    @Mock
+    private UserService userService;
     @Mock
     private ClickatellSender clickatellSender;
 
@@ -26,8 +29,9 @@ public class SmsListenerTest {
         final ScimitarUser berten = new ScimitarUser();
         berten.setUsername("Berten");
         berten.setPhoneNumber("bertennumber");
-        when(scimitarUserEao.findByUsernameIgnoreCase("Berten"))
+        when(securityHelper.getLoggedInUser())
             .thenReturn(berten);
+        when(userService.findBy("berten")).thenReturn(berten);
     }
 
     @Test
@@ -42,7 +46,7 @@ public class SmsListenerTest {
 
     @Test
     public void getResult_noUsername() throws Exception {
-        assertThat(smsListener.getResult("Berten")).isEqualTo(
+        assertThat(smsListener.getResult()).isEqualTo(
             "Error: use following pattern for command sms: username text");
         verifyZeroInteractions(clickatellSender);
     }
@@ -52,23 +56,16 @@ public class SmsListenerTest {
         final ScimitarUser t = new ScimitarUser();
         t.setPhoneNumber("phone");
         t.setUsername("knownUsername");
-        when(scimitarUserEao.findByUsernameIgnoreCase("knownusername"))
+        when(userService.findBy("knownusername"))
             .thenReturn(t);
         assertThat(smsListener
-            .getResult("Berten", "knownusername", "dit", "is", "een", "tekst"))
+            .getResult("knownusername", "dit", "is", "een", "tekst"))
             .isEqualTo(
                 "Message dit is een tekst - Berten/bertennumber sent to knownUsername");
         verify(clickatellSender)
             .sendMessage("phone", "dit is een tekst - Berten/bertennumber");
     }
 
-    @Test
-    public void getResult_UnknownUsername() throws Exception {
-        when(scimitarUserEao.findByUsernameIgnoreCase("unknownusername"))
-            .thenReturn(null);
-        assertThat(smsListener.getResult("Berten", "unknownusername", "text"))
-            .isEqualTo("User unknownusername does not exist");
-        verifyZeroInteractions(clickatellSender);
-    }
+
 
 }

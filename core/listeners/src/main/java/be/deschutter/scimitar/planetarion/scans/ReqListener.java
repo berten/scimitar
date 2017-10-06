@@ -8,6 +8,7 @@ import be.deschutter.scimitar.planet.PlanetEao;
 import be.deschutter.scimitar.scans.ScanRequest;
 import be.deschutter.scimitar.scans.ScanRequestEao;
 import be.deschutter.scimitar.scans.ScanType;
+import be.deschutter.scimitar.security.SecurityHelper;
 import be.deschutter.scimitar.user.ScimitarUserEao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
@@ -27,23 +28,22 @@ import java.util.stream.Collectors;
 @Component
 public class ReqListener implements Listener {
     private PlanetEao planetEao;
-    private ScimitarUserEao scimitarUserEao;
     private ScanRequestEao scanRequestEao;
     private TickerInfoEao tickerInfoEao;
     private JmsTemplate jmsTemplate;
     private Topic scanRequestTopic;
+    private SecurityHelper securityHelper;
 
     @Autowired
-    public ReqListener(final PlanetEao planetEao,
-        final ScimitarUserEao scimitarUserEao,
-        final ScanRequestEao scanRequestEao, final TickerInfoEao tickerInfoEao,
-        final JmsTemplate jmsTemplate, final Topic scanRequestTopic) {
+    public ReqListener(final PlanetEao planetEao, final ScanRequestEao scanRequestEao, final TickerInfoEao tickerInfoEao,
+        final JmsTemplate jmsTemplate, final Topic scanRequestTopic,
+        final SecurityHelper securityHelper) {
         this.planetEao = planetEao;
-        this.scimitarUserEao = scimitarUserEao;
         this.scanRequestEao = scanRequestEao;
         this.tickerInfoEao = tickerInfoEao;
         this.jmsTemplate = jmsTemplate;
         this.scanRequestTopic = scanRequestTopic;
+        this.securityHelper = securityHelper;
     }
 
     @Override
@@ -58,7 +58,6 @@ public class ReqListener implements Listener {
             + " [dists] | x y z blocks <amps> | cancel <id> | list [amps] | links [amps]";
     }
 
-
     @Override
     @PreAuthorize("hasAuthority('ROLE_MEMBER')")
     public boolean hasAccess() {
@@ -67,7 +66,7 @@ public class ReqListener implements Listener {
 
     @Override
     @PreAuthorize("hasAuthority('ROLE_MEMBER')")
-    public String getResult(final String username, final String... parameters) {
+    public String getResult(final String... parameters) {
         final TickerInfo currentTick = tickerInfoEao
             .findFirstByOrderByTickDesc();
 
@@ -84,11 +83,11 @@ public class ReqListener implements Listener {
                 try {
                     int id = Integer.parseInt(parameters[1]);
                     scanRequestEao.delete(id);
-                    return String.format("Scanrequest %d successfully cancelled",id);
+                    return String
+                        .format("Scanrequest %d successfully cancelled", id);
                 } catch (NumberFormatException e) {
                     return getErrorMessage();
                 }
-
 
             } else if (parameters[0].toUpperCase().equals("LIST")) {
                 try {
@@ -116,12 +115,14 @@ public class ReqListener implements Listener {
                 int z = Integer.parseInt(parameters[2]);
 
                 int amps = Integer.parseInt(parameters[4]);
-                if(parameters[3].toUpperCase().equals("BLOCKS")) {
+                if (parameters[3].toUpperCase().equals("BLOCKS")) {
                     final Planet planet = planetEao
                         .findByXAndYAndZAndTick(x, y, z, currentTick.getTick());
                     planet.setDists(amps);
                     planetEao.save(planet);
-                    return String.format("Updated intelligence on %d:%d:%d to %d dists",x,y,z,amps);
+                    return String
+                        .format("Updated intelligence on %d:%d:%d to %d dists",
+                            x, y, z, amps);
                 }
             } catch (NumberFormatException e) {
                 return getErrorMessage();
@@ -141,16 +142,17 @@ public class ReqListener implements Listener {
                         ScanRequest request = new ScanRequest();
                         request.setPlanetId(p.getId());
                         request.setTick(p.getTick());
-                        request.setRequestedBy(
-                            scimitarUserEao.findByUsernameIgnoreCase(username));
+                        request
+                            .setRequestedBy(securityHelper.getLoggedInUser());
                         request.setScanType(
                             ScanType.valueOf(String.valueOf((char) value)));
                         scanRequestEao.save(request);
-                        jmsTemplate.convertAndSend(scanRequestTopic,
-                            String.format("New Scan Request: %s on %d:%d:%d https://game.planetarion.com/waves.pl?id=%d&x=%d&y=%d&z=%d",request.getScanType().name(),x,y,z,request.getScanType().ordinal(),x,y,z));
+                        jmsTemplate.convertAndSend(scanRequestTopic, String
+                            .format(
+                                "New Scan Request: %s on %d:%d:%d https://game.planetarion.com/waves.pl?id=%d&x=%d&y=%d&z=%d",
+                                request.getScanType().name(), x, y, z,
+                                request.getScanType().ordinal(), x, y, z));
                     });
-
-
 
                     return String
                         .format("Requested %s scan(s) for coords: %s:%s:%s",

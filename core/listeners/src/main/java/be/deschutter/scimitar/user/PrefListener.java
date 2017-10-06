@@ -3,6 +3,7 @@ package be.deschutter.scimitar.user;
 import be.deschutter.scimitar.planet.Planet;
 import be.deschutter.scimitar.planet.PlanetEao;
 import be.deschutter.scimitar.Listener;
+import be.deschutter.scimitar.security.SecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
@@ -12,14 +13,16 @@ import javax.transaction.Transactional;
 @Component
 
 public class PrefListener implements Listener {
-    private final ScimitarUserEao scimitarUserEao;
+    private final UserService userService;
     private final PlanetEao planetEao;
+    private SecurityHelper securityHelper;
 
     @Autowired
-    public PrefListener(final ScimitarUserEao scimitarUserEao,
-        final PlanetEao planetEao) {
-        this.scimitarUserEao = scimitarUserEao;
+    public PrefListener(final UserService userService,
+        final PlanetEao planetEao, final SecurityHelper securityHelper) {
+        this.userService = userService;
         this.planetEao = planetEao;
+        this.securityHelper = securityHelper;
     }
 
     @Override
@@ -41,9 +44,8 @@ public class PrefListener implements Listener {
     @Override
     @Transactional
     @PreAuthorize("hasAuthority('ROLE_MEMBER')")
-    public String getResult(final String username, final String... parameters) {
-        final ScimitarUser user = scimitarUserEao
-            .findByUsernameIgnoreCase(username);
+    public String getResult(final String... parameters) {
+        final ScimitarUser user = securityHelper.getLoggedInUser();
         String returnMessage = "";
         for (String parameter : parameters) {
             final String[] split = parameter.split("=");
@@ -87,7 +89,7 @@ public class PrefListener implements Listener {
         if (returnMessage.isEmpty()) {
             return getErrorMessage();
         }
-        scimitarUserEao.saveAndFlush(user);
+        userService.save(user);
         return returnMessage;
     }
 

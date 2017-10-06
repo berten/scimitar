@@ -44,7 +44,7 @@ public class ForceCallListener implements Listener {
 
     @Override
     @PreAuthorize("hasAnyAuthority('ROLE_HC','ROLE_BC','ROLE_ADMIN')")
-    public String getResult(final String username, final String... parameters) {
+    public String getResult(final String... parameters) {
         if (parameters.length == 1) {
 
             taskExecutor.execute(

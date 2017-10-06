@@ -19,11 +19,11 @@ public class AddUserListenerTest {
     @InjectMocks
     private AddUserListener addUserListener;
     @Mock
-    private ScimitarUserEao scimitarUserEao;
+    private UserService scimitarUserEao;
 
     @Before
     public void setUp() throws Exception {
-        when(scimitarUserEao.saveAndFlush(any(ScimitarUser.class))).then(
+        when(scimitarUserEao.save(any(ScimitarUser.class))).then(
             (Answer<ScimitarUser>) invocationOnMock -> (ScimitarUser) invocationOnMock
                 .getArguments()[0]);
     }
@@ -41,13 +41,14 @@ public class AddUserListenerTest {
 
     @Test
     public void getResult_NoParameters() throws Exception {
-        assertThat(addUserListener.getResult("Berten")).isEqualTo(
+        assertThat(addUserListener.getResult()).isEqualTo(
             "Error: use following pattern for command adduser: nickname ADMIN|BC|HC|MEMBER");
     }
 
     @Test
     public void getResult_OneParameter() throws Exception {
-        assertThat(addUserListener.getResult("Berten", "newUser"))
+        when(scimitarUserEao.findBy("newUser")).thenThrow(new UserNotFoundException("newUser"));
+        assertThat(addUserListener.getResult("newUser"))
             .isEqualTo("User newUser added with roles: MEMBER");
     }
 
@@ -57,23 +58,23 @@ public class AddUserListenerTest {
         user.setUsername("NewUser");
         user.addRole(RoleEnum.ADMIN);
         user.addRole(RoleEnum.MEMBER);
-        when(scimitarUserEao.findByUsernameIgnoreCase("newUser"))
+        when(scimitarUserEao.findBy("newUser"))
             .thenReturn(user);
 
-        assertThat(addUserListener.getResult("Berten", "newUser", "HC"))
+        assertThat(addUserListener.getResult("newUser", "HC"))
             .isEqualTo(
                 "User NewUser already exists with roles: ADMIN,MEMBER. Use !changeuser to change this user's access");
     }
 
     @Test
     public void getResult_NewUser() throws Exception {
-
+        when(scimitarUserEao.findBy("newUser")).thenThrow(new UserNotFoundException("newUser"));
         assertThat(
-            addUserListener.getResult("Berten", "newUser", "HC", "admin"))
+            addUserListener.getResult("newUser", "HC", "admin"))
             .isEqualTo("User newUser added with roles: ADMIN,HC");
         final ArgumentCaptor<ScimitarUser> captor = ArgumentCaptor
             .forClass(ScimitarUser.class);
-        verify(scimitarUserEao).saveAndFlush(captor.capture());
+        verify(scimitarUserEao).save(captor.capture());
         assertThat(captor.getValue().getUsername()).isEqualTo("newUser");
         assertThat(captor.getValue().getRoles()).extracting("role")
             .contains(RoleEnum.HC, RoleEnum.ADMIN);

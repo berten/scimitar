@@ -1,7 +1,8 @@
 package be.deschutter.scimitar;
 
 import be.deschutter.scimitar.channel.ChannelConfiguration;
-import be.deschutter.scimitar.channel.ChannelConfigurationEao;
+import be.deschutter.scimitar.channel.ChannelDoesNotExistException;
+import be.deschutter.scimitar.channel.ChannelService;
 import be.deschutter.scimitar.channel.ChannelType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,12 +15,11 @@ import java.util.stream.Collectors;
 @Component
 public class RegChanListener implements Listener {
 
-    private final ChannelConfigurationEao channelConfigurationEao;
+    private final ChannelService channelService;
 
     @Autowired
-    public RegChanListener(
-        final ChannelConfigurationEao channelConfigurationEao) {
-        this.channelConfigurationEao = channelConfigurationEao;
+    public RegChanListener(final ChannelService channelService) {
+        this.channelService = channelService;
     }
 
     @Override
@@ -42,28 +42,29 @@ public class RegChanListener implements Listener {
 
     @Override
     @PreAuthorize("hasAnyAuthority('ROLE_HC','ROLE_ADMIN')")
-    public String getResult(final String username, final String... parameters) {
+    public String getResult(final String... parameters) {
         if (parameters.length == 2) {
             final String channelName = parameters[1];
-            final ChannelConfiguration channel = channelConfigurationEao
-                .findByChannelName(channelName);
-
-            if(channel == null) {
-                ChannelType type = ChannelType.valueOf(parameters[0].toUpperCase());
+            try {
+                final ChannelConfiguration channel = channelService
+                    .findBy(channelName);
+                return String.format("Channel %s allready regged for type %s",
+                    channel.getChannelName(), channel.getChannelType());
+            } catch (ChannelDoesNotExistException e) {
+                ChannelType type = ChannelType
+                    .valueOf(parameters[0].toUpperCase());
 
                 final ChannelConfiguration c = new ChannelConfiguration();
                 c.setChannelType(type);
                 c.setChannelName(channelName);
 
-                channelConfigurationEao.save(c);
+                channelService.save(c);
                 return "Channel Regged for type " + type;
-            } else {
-                return "Channel allready regged for type " + channel.getChannelType();
             }
+
         } else if (parameters.length == 1) {
             return "This command should only be used in slack";
-        }
-        else
+        } else
             return getErrorMessage();
     }
 }

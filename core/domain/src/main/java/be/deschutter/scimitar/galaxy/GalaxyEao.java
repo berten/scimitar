@@ -6,4 +6,6 @@ public interface GalaxyEao extends JpaRepository<Galaxy, GalaxyPk> {
     Long countByTick(long tick);
 
     Galaxy findFirstByXAndYOrderByTickDesc(int x, int y);
+
+    Galaxy findByXAndYAndTick(int x, int y, long tick);
 }

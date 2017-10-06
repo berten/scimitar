@@ -1,9 +1,7 @@
 package be.deschutter.scimitar.planetarion;
 
-import be.deschutter.scimitar.TickerInfo;
-import be.deschutter.scimitar.TickerInfoEao;
 import be.deschutter.scimitar.planet.Planet;
-import be.deschutter.scimitar.planet.PlanetEao;
+import be.deschutter.scimitar.planet.PlanetService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,18 +19,15 @@ public class ValueListenerTest {
     @InjectMocks
     private ValueListener valueListener;
     @Mock
-    private PlanetEao planetEao;
-    @Mock
-    private TickerInfoEao tickerInfoEao;
+    private PlanetService planetService;
 
     @Before
     public void setUp() throws Exception {
         Planet p1 = createPlanet(1452145, 1452145 - 3400, 3);
         Planet p2 = createPlanet(3400, 2400, 2);
         Planet p3 = createPlanet(1000, 10, 1);
-        when(tickerInfoEao.findFirstByOrderByTickDesc()).thenReturn(new TickerInfo(123));
-        when(planetEao.findByXAndYAndZAndTick(1,2,3,123L)).thenReturn(new Planet());
-        when(planetEao.findFirst15ByXAndYAndZOrderByTickDesc(1, 2, 3)).thenReturn(Arrays.asList(p1, p2, p3));
+        when(planetService.findFirst15ByXAndYAndZOrderByTickDesc(1, 2, 3))
+            .thenReturn(Arrays.asList(p1, p2, p3));
     }
 
     private Planet createPlanet(int value, int valueGrowth, int tick) {
@@ -55,30 +50,30 @@ public class ValueListenerTest {
 
     @Test
     public void getResult() throws Exception {
-        assertThat(valueListener.getResult("user","1", "2", "3")).isEqualTo("Value in the last 3 ticks on 1:2:3 pt1 1000 (10)| pt2 3400 (2400)| pt3 1.4M (1.4M)");
+        assertThat(valueListener.getResult("1", "2", "3")).isEqualTo(
+            "Value in the last 3 ticks on 1:2:3 pt1 1000 (10)| pt2 3400 (2400)| pt3 1.4M (1.4M)");
 
     }
 
     @Test
     public void getResult_toFewParamters() throws Exception {
-        assertThat(valueListener.getResult("user","1", "2")).isEqualTo("Error: use following pattern for command value: x y z");
+        assertThat(valueListener.getResult("1", "2"))
+            .isEqualTo("Error: use following pattern for command value: x y z");
 
     }
 
     @Test
     public void getResult_toManyParamters() throws Exception {
-        assertThat(valueListener.getResult("user","1", "2", "3", "4")).isEqualTo("Error: use following pattern for command value: x y z");
+        assertThat(valueListener.getResult("1", "2", "3", "4"))
+            .isEqualTo("Error: use following pattern for command value: x y z");
 
     }
 
     @Test
     public void getResult_ParameterNotNumber() throws Exception {
-        assertThat(valueListener.getResult("user","1", "2", "z")).isEqualTo("Error: use following pattern for command value: x y z");
+        assertThat(valueListener.getResult("1", "2", "z"))
+            .isEqualTo("Error: use following pattern for command value: x y z");
     }
 
-    @Test
-    public void getResult_PlanetDoesNotExistInCurrentTick() throws Exception {
-        when(planetEao.findByXAndYAndZAndTick(1,2,3,123L)).thenReturn(null);
-        assertThat(valueListener.getResult("user","1", "2", "3")).isEqualTo("Planet 1:2:3 does not exist");
-    }
+
 }

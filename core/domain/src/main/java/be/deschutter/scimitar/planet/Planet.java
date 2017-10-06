@@ -1,13 +1,20 @@
 package be.deschutter.scimitar.planet;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.Index;
+import javax.persistence.Table;
 
 @Entity
 @IdClass(PlanetPk.class)
-@Table(indexes = {@Index(name = "planet_x_index", columnList = "x", unique = false),
-        @Index(name = "planet_y_index", columnList = "y", unique = false),
-        @Index(name = "planet_xytick_index", columnList = "x,y,tick", unique = false),
-        @Index(name = "planet_tick_index", columnList = "tick", unique = false)})
+@Table(indexes = {
+    @Index(name = "planet_x_index", columnList = "x", unique = false),
+    @Index(name = "planet_y_index", columnList = "y", unique = false),
+    @Index(name = "planet_xytick_index", columnList = "x,y,tick",
+        unique = false),
+    @Index(name = "planet_tick_index", columnList = "tick", unique = false) })
 public class Planet {
     @Id
     private long tick;
@@ -48,6 +55,13 @@ public class Planet {
 
     private int amps = 0;
     private int dists = 0;
+
+    public Planet(final String id) {
+        this.id = id;
+    }
+
+    public Planet() {
+    }
 
     public int getSizeRank() {
         return sizeRank;

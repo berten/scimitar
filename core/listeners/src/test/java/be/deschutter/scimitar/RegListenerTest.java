@@ -1,7 +1,8 @@
 package be.deschutter.scimitar;
 
+import be.deschutter.scimitar.security.SecurityHelper;
 import be.deschutter.scimitar.user.ScimitarUser;
-import be.deschutter.scimitar.user.ScimitarUserEao;
+import be.deschutter.scimitar.user.UserService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +20,9 @@ public class RegListenerTest {
     @InjectMocks
     private RegListener regListener;
     @Mock
-    private ScimitarUserEao scimitarUserEao;
+    private SecurityHelper securityHelper;
+    @Mock
+    private UserService userService;
     private ScimitarUser scimitarUser;
 
     @Before
@@ -27,8 +30,8 @@ public class RegListenerTest {
         scimitarUser = new ScimitarUser();
         scimitarUser.setUsername("berten");
         scimitarUser.setSlackUsername(null);
-
-        when(scimitarUserEao.findByUsernameIgnoreCase("berten"))
+        when(securityHelper.getAnonymousUserName()).thenReturn("slackuser");
+        when(userService.findBy("berten"))
             .thenReturn(scimitarUser);
     }
 
@@ -44,11 +47,11 @@ public class RegListenerTest {
 
     @Test
     public void getResult() throws Exception {
-        assertThat(regListener.getResult("slackuser", "berten"))
+        assertThat(regListener.getResult("berten"))
             .isEqualTo("pnick successfully added to slack profile");
         final ArgumentCaptor<ScimitarUser> captor = ArgumentCaptor
             .forClass(ScimitarUser.class);
-        verify(scimitarUserEao).saveAndFlush(captor.capture());
+        verify(userService).save(captor.capture());
 
         assertThat(captor.getValue().getSlackUsername()).isEqualTo("slackuser");
     }
@@ -56,13 +59,14 @@ public class RegListenerTest {
     @Test
     public void getResult_AlreadyHasSlackName() throws Exception {
         scimitarUser.setSlackUsername("slackusernamealreadyadded");
-        assertThat(regListener.getResult("slackuser", "berten"))
-            .isEqualTo("A slack nick for this user was already added. Are you trying to hack me?");
-        verify(scimitarUserEao, never()).saveAndFlush(any(ScimitarUser.class));
+        assertThat(regListener.getResult("berten")).isEqualTo(
+            "A slack nick for this user was already added. Are you trying to hack me?");
+        verify(userService, never()).save(any(ScimitarUser.class));
     }
 
     @Test
     public void getResultNoParamters() throws Exception {
-        assertThat(regListener.getResult("slackuser")).isEqualTo("Error: use following pattern for command reg: pnick");
+        assertThat(regListener.getResult())
+            .isEqualTo("Error: use following pattern for command reg: pnick");
     }
 }

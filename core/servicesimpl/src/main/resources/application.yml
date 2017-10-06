@@ -43,6 +43,7 @@ pa:
     valuePerResource: 0.01
     scanurl: http://game.planetarion.com?showscan.pl?scan_id
     warBonus: 0.05
+    protection: 24
     governments:
         -   name: Corporatism
             code: Corp

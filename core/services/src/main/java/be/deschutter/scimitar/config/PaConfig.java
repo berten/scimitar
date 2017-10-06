@@ -19,6 +19,7 @@ public class PaConfig {
     private Double warBonus;
     private Double valuePerResource;
     private String scanurl;
+    private Integer protection;
 
     public List<Race> getRaces() {
         return races;
@@ -85,5 +86,13 @@ public class PaConfig {
 
     public void setMinCap(final Double minCap) {
         this.minCap = minCap;
+    }
+
+    public Integer getProtection() {
+        return protection;
+    }
+
+    public void setProtection(final Integer protection) {
+        this.protection = protection;
     }
 }

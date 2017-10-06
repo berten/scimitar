@@ -1,11 +1,9 @@
 package be.deschutter.scimitar.planetarion;
 
-import be.deschutter.scimitar.TickerInfo;
-import be.deschutter.scimitar.TickerInfoEao;
 import be.deschutter.scimitar.galaxy.Galaxy;
-import be.deschutter.scimitar.galaxy.GalaxyEao;
+import be.deschutter.scimitar.galaxy.GalaxyService;
 import be.deschutter.scimitar.planet.Planet;
-import be.deschutter.scimitar.planet.PlanetEao;
+import be.deschutter.scimitar.planet.PlanetService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,16 +20,12 @@ public class LookupListenerTest {
     private LookupListener lookupListener;
 
     @Mock
-    private GalaxyEao galaxyEao;
+    private GalaxyService galaxyService;
     @Mock
-    private PlanetEao planetEao;
-    @Mock
-    private TickerInfoEao tickerInfoEao;
+    private PlanetService planetService;
 
     @Before
     public void setUp() throws Exception {
-
-        when(tickerInfoEao.findFirstByOrderByTickDesc()).thenReturn(new TickerInfo(123));
 
         final Planet planet = new Planet();
         planet.setX(3);
@@ -48,8 +42,7 @@ public class LookupListenerTest {
         planet.setValueRank(2);
         planet.setXpRank(3);
         planet.setSizeRank(4);
-        when(planetEao.findByXAndYAndZAndTick(3, 6, 2,123L))
-            .thenReturn(planet);
+        when(planetService.findBy(3, 6, 2)).thenReturn(planet);
 
         final Galaxy galaxy = new Galaxy();
         galaxy.setX(3);
@@ -64,8 +57,7 @@ public class LookupListenerTest {
         galaxy.setValueRank(2);
         galaxy.setXpRank(3);
         galaxy.setSizeRank(4);
-        when(galaxyEao.findFirstByXAndYOrderByTickDesc(3, 6))
-            .thenReturn(galaxy);
+        when(galaxyService.findBy(3, 6)).thenReturn(galaxy);
     }
 
     @Test
@@ -80,24 +72,14 @@ public class LookupListenerTest {
 
     @Test
     public void getResult_galaxy() throws Exception {
-        assertThat(lookupListener.getResult("user","3", "6")).isEqualTo(
+        assertThat(lookupListener.getResult("3", "6")).isEqualTo(
             "3:6 'galaxyname' (8) Score: 1000 (1) Value: 100 (2) Size: 40 (4) XP: 10 (3)");
     }
 
     @Test
-    public void getResult_galaxy_DoesNotExist() throws Exception {
-        assertThat(lookupListener.getResult("user","99", "99"))
-            .isEqualTo("Galaxy 99:99 does not exist");
-    }
-
-    @Test
-    public void getResult_planet_DoesNotExist() throws Exception {
-        assertThat(lookupListener.getResult("user","99","99","99")).isEqualTo("Planet 99:99:99 does not exist");
-    }
-
-    @Test
     public void getResult_planet() throws Exception {
-        assertThat(lookupListener.getResult("user","3","6","2")).isEqualTo("3:6:2 (Ter) 'rname of pname' Score: 1000 (1) Value: 100 (2) Size: 40 (4) XP: 10 (3)");
+        assertThat(lookupListener.getResult("3", "6", "2")).isEqualTo(
+            "3:6:2 (Ter) 'rname of pname' Score: 1000 (1) Value: 100 (2) Size: 40 (4) XP: 10 (3)");
     }
 
     @Test
@@ -106,8 +88,11 @@ public class LookupListenerTest {
 
     @Test
     public void getResult_ParametersGiveError() throws Exception {
-        assertThat(lookupListener.getResult("user")).isEqualTo("Error: use following pattern for command lookup: x y [z]");
-        assertThat(lookupListener.getResult("1")).isEqualTo("Error: use following pattern for command lookup: x y [z]");
-        assertThat(lookupListener.getResult("1","a")).isEqualTo("Error: use following pattern for command lookup: x y [z]");
+        assertThat(lookupListener.getResult()).isEqualTo(
+            "Error: use following pattern for command lookup: x y [z]");
+        assertThat(lookupListener.getResult()).isEqualTo(
+            "Error: use following pattern for command lookup: x y [z]");
+        assertThat(lookupListener.getResult("a")).isEqualTo(
+            "Error: use following pattern for command lookup: x y [z]");
     }
 }

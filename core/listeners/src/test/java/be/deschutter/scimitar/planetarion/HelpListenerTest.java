@@ -48,22 +48,22 @@ public class HelpListenerTest {
 
     @Test
     public void getResult() throws Exception {
-        assertThat(helpListener.getResult("user")).isEqualTo("List of commands: one, two");
+        assertThat(helpListener.getResult()).isEqualTo("List of commands: one, two");
     }
 
     @Test
     public void getResult_detail() throws Exception {
-        assertThat(helpListener.getResult("user","one")).isEqualTo("Pattern for command one: 1 2");
+        assertThat(helpListener.getResult("one")).isEqualTo("Pattern for command one: 1 2");
     }
 
     @Test
     public void getResult_detail_doesnotExist() throws Exception {
-        assertThat(helpListener.getResult("user","three")).isEqualTo("Command three was not found");
+        assertThat(helpListener.getResult("three")).isEqualTo("Command three was not found");
     }
 
     @Test
     public void getResult_multipleparamters() throws Exception {
-        assertThat(helpListener.getResult("user","three","four","five")).isEqualTo("Error: use following pattern for command help: [command]");
+        assertThat(helpListener.getResult("three","four","five")).isEqualTo("Error: use following pattern for command help: [command]");
     }
 
     private Listener listener(final String command, final String pattern) {
@@ -79,7 +79,7 @@ public class HelpListenerTest {
             }
 
             @Override
-            public String getResult(String username, final String... parameters) {
+            public String getResult(final String... parameters) {
                 return "";
             }
         };

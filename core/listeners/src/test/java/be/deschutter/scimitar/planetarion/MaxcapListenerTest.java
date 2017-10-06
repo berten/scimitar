@@ -60,7 +60,7 @@ public class MaxcapListenerTest {
     @Ignore
     public void getResult() throws Exception {
         assertThat(
-            maxcapListener.getResult("berten", "1", "2", "3", "4", "5", "6"))
+            maxcapListener.getResult("1", "2", "3", "4", "5", "6"))
             .isEqualTo("maxcap");
     }
 

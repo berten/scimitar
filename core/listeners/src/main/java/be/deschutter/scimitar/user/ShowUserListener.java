@@ -1,6 +1,7 @@
 package be.deschutter.scimitar.user;
 
 import be.deschutter.scimitar.Listener;
+import be.deschutter.scimitar.security.SecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
@@ -8,11 +9,14 @@ import org.springframework.stereotype.Component;
 @Component
 
 public class ShowUserListener implements Listener {
-    private final ScimitarUserEao scimitarUserEao;
+    private final UserService userService;
+    private SecurityHelper securityHelper;
 
     @Autowired
-    public ShowUserListener(final ScimitarUserEao scimitarUserEao) {
-        this.scimitarUserEao = scimitarUserEao;
+    public ShowUserListener(final UserService userService,
+        final SecurityHelper securityHelper) {
+        this.userService = userService;
+        this.securityHelper = securityHelper;
     }
 
     @Override
@@ -31,22 +35,13 @@ public class ShowUserListener implements Listener {
         return true;
     }
 
-
     @Override
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_HC')")
-    public String getResult(final String username, final String... parameters) {
+    public String getResult(final String... parameters) {
         if (null == parameters || parameters.length == 0) {
-            final ScimitarUser u = scimitarUserEao
-                .findByUsernameIgnoreCase(username);
-
-            return returnString(u);
+            return returnString(securityHelper.getLoggedInUser());
         } else {
-            final ScimitarUser u = scimitarUserEao
-                .findByUsernameIgnoreCase(parameters[0]);
-            if (null != u)
-                return returnString(u);
-            else
-                return "User " + parameters[0] + " does not exist";
+            return returnString(userService.findBy(parameters[0]));
         }
     }
 

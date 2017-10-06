@@ -27,6 +27,14 @@ public class ScimitarUser {
     @ManyToMany(mappedBy = "scimitarUsers")
     private Set<BattleGroup> battleGroups = new HashSet<>();
 
+    public ScimitarUser(final String username) {
+
+        this.username = username;
+    }
+
+    public ScimitarUser() {
+    }
+
     public Integer getId() {
         return id;
     }
@@ -95,8 +103,8 @@ public class ScimitarUser {
     }
 
     public String getRolesAsString() {
-       return  String.join(",",
-           roles.stream().map(role -> role.getRole().name())
+        return String.join(",",
+            roles.stream().map(role -> role.getRole().name())
                 .sorted(String::compareTo).collect(Collectors.toList()));
     }
 
@@ -131,5 +139,15 @@ public class ScimitarUser {
     @Override
     public int hashCode() {
         return username.hashCode();
+    }
+
+    public boolean hasRole(final RoleEnum roleEnum) {
+        return getRoles().stream().filter(role -> role.getRole() == roleEnum)
+            .count() > 0;
+    }
+
+    public boolean isBc() {
+        return getRoles().stream().map(Role::getRole)
+            .collect(Collectors.toList()).contains(RoleEnum.BC);
     }
 }

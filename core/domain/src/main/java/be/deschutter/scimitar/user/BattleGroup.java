@@ -17,6 +17,13 @@ public class BattleGroup {
     @ManyToMany(cascade = CascadeType.ALL)
     private Set<ScimitarUser> scimitarUsers = new HashSet<>();
 
+    public BattleGroup(final String name) {
+        this.name = name;
+    }
+
+    public BattleGroup() {
+    }
+
     public Integer getId() {
         return id;
     }

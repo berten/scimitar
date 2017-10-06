@@ -28,11 +28,18 @@ public class ScimitarController {
             try {
                 if (listener.getCommand().equals(event.getCommand())) {
                     event.setReply(listener
-                        .getResult(event.getLoggedInUsername(), event.getParameters()));
+                        .getResult(event.getParameters()));
                     return new ResponseEntity<>(event, HttpStatus.OK);
                 }
             } catch (AccessDeniedException e) {
                 event.setReply("Access Denied");
+                return new ResponseEntity<>(event, HttpStatus.OK);
+            } catch (NumberFormatException e) {
+                event.setReply(listener.getErrorMessage());
+                return new ResponseEntity<>(event, HttpStatus.OK);
+            } catch (RuntimeException e) {
+                event.setReply(e.getMessage());
+                return new ResponseEntity<>(event, HttpStatus.OK);
             }
         }
         return new ResponseEntity<>(event, HttpStatus.NO_CONTENT);
