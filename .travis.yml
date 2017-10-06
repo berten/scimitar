@@ -1,6 +1,6 @@
 language: java
 cache:
   directories:
-  - $HOME/.m2ls
+  - $HOME/.m2
 before-install:
   - git submodule update --init
